@@ -5,6 +5,8 @@ namespace AppSimple.Core.Tests.Constants;
 /// <summary>Tests that <see cref="AppConstants"/> values remain stable and within expected ranges.</summary>
 public sealed class AppConstantsTests
 {
+    // ── Identity ─────────────────────────────────────────────────────────────
+
     [Fact]
     public void AppName_IsAppSimple()
     {
@@ -16,6 +18,92 @@ public sealed class AppConstantsTests
     {
         Assert.Equal("admin", AppConstants.DefaultAdminUsername);
     }
+
+    [Fact]
+    public void DefaultAdminPassword_IsNotEmpty()
+    {
+        Assert.False(string.IsNullOrWhiteSpace(AppConstants.DefaultAdminPassword));
+    }
+
+    [Fact]
+    public void DefaultAdminPassword_MeetsMinLength()
+    {
+        Assert.True(AppConstants.DefaultAdminPassword.Length >= AppConstants.MinPasswordLength);
+    }
+
+    [Fact]
+    public void DefaultSamplePassword_IsNotEmpty()
+    {
+        Assert.False(string.IsNullOrWhiteSpace(AppConstants.DefaultSamplePassword));
+    }
+
+    [Fact]
+    public void DefaultSamplePassword_DifferentFromAdminPassword()
+    {
+        Assert.NotEqual(AppConstants.DefaultAdminPassword, AppConstants.DefaultSamplePassword);
+    }
+
+    [Fact]
+    public void DefaultSamplePassword_MeetsMinLength()
+    {
+        Assert.True(AppConstants.DefaultSamplePassword.Length >= AppConstants.MinPasswordLength);
+    }
+
+    // ── Networking ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public void DefaultWebApiBaseUrl_IsValidAbsoluteUri()
+    {
+        var valid = Uri.TryCreate(AppConstants.DefaultWebApiBaseUrl, UriKind.Absolute, out _);
+        Assert.True(valid, $"'{AppConstants.DefaultWebApiBaseUrl}' is not a valid absolute URI.");
+    }
+
+    // ── JWT ──────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void DefaultJwtExpirationMinutes_IsPositive()
+    {
+        Assert.True(AppConstants.DefaultJwtExpirationMinutes > 0);
+    }
+
+    [Fact]
+    public void DefaultJwtExpirationMinutes_IsReasonable()
+    {
+        // Between 1 minute and 24 hours (1440 minutes)
+        Assert.InRange(AppConstants.DefaultJwtExpirationMinutes, 1, 1440);
+    }
+
+    // ── Config keys ──────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(AppConstants.ConfigLoggingEnableFile)]
+    [InlineData(AppConstants.ConfigLoggingDirectory)]
+    [InlineData(AppConstants.ConfigDatabaseConnectionString)]
+    [InlineData(AppConstants.ConfigWebApiBaseUrl)]
+    [InlineData(AppConstants.ConfigJwtSecret)]
+    [InlineData(AppConstants.ConfigJwtIssuer)]
+    [InlineData(AppConstants.ConfigJwtAudience)]
+    [InlineData(AppConstants.ConfigJwtExpiration)]
+    public void ConfigKey_IsNotEmpty(string key)
+    {
+        Assert.False(string.IsNullOrWhiteSpace(key));
+    }
+
+    [Theory]
+    [InlineData(AppConstants.ConfigLoggingEnableFile)]
+    [InlineData(AppConstants.ConfigLoggingDirectory)]
+    [InlineData(AppConstants.ConfigDatabaseConnectionString)]
+    [InlineData(AppConstants.ConfigWebApiBaseUrl)]
+    [InlineData(AppConstants.ConfigJwtSecret)]
+    [InlineData(AppConstants.ConfigJwtIssuer)]
+    [InlineData(AppConstants.ConfigJwtAudience)]
+    [InlineData(AppConstants.ConfigJwtExpiration)]
+    public void ConfigKey_ContainsColon_IndicatingSection(string key)
+    {
+        Assert.Contains(':', key);
+    }
+
+    // ── Validation limits ────────────────────────────────────────────────────
 
     [Fact]
     public void MinPasswordLength_IsAtLeast8()

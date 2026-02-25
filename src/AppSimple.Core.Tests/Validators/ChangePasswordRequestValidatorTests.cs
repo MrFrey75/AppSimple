@@ -72,4 +72,13 @@ public sealed class ChangePasswordRequestValidatorTests
         var req = Valid(); req.ConfirmNewPassword = "Different1";
         _validator.TestValidate(req).ShouldHaveValidationErrorFor(x => x.ConfirmNewPassword);
     }
+
+    [Fact]
+    public void ConfirmNewPassword_Null_SkipsConfirmValidation()
+    {
+        // When ConfirmNewPassword is null the When() guard suppresses all confirm checks
+        var req = Valid();
+        req.ConfirmNewPassword = null;
+        _validator.TestValidate(req).ShouldNotHaveValidationErrorFor(x => x.ConfirmNewPassword);
+    }
 }

@@ -1,3 +1,4 @@
+using AppSimple.Core.Enums;
 using AppSimple.Core.Models.Requests;
 using AppSimple.Core.Validators;
 using FluentValidation.TestHelper;
@@ -87,5 +88,42 @@ public sealed class UpdateUserRequestValidatorTests
     {
         var req = new UpdateUserRequest { Bio = "Short bio." };
         _validator.TestValidate(req).ShouldNotHaveValidationErrorFor(x => x.Bio);
+    }
+
+    [Theory]
+    [InlineData(UserRole.User)]
+    [InlineData(UserRole.Admin)]
+    public void Role_SetToAnyValidValue_PassesValidation(UserRole role)
+    {
+        var req = new UpdateUserRequest { Role = role };
+        _validator.TestValidate(req).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Role_Null_PassesValidation()
+    {
+        var req = new UpdateUserRequest { Role = null };
+        _validator.TestValidate(req).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void IsActive_True_PassesValidation()
+    {
+        var req = new UpdateUserRequest { IsActive = true };
+        _validator.TestValidate(req).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void IsActive_False_PassesValidation()
+    {
+        var req = new UpdateUserRequest { IsActive = false };
+        _validator.TestValidate(req).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void IsActive_Null_PassesValidation()
+    {
+        var req = new UpdateUserRequest { IsActive = null };
+        _validator.TestValidate(req).ShouldNotHaveAnyValidationErrors();
     }
 }
