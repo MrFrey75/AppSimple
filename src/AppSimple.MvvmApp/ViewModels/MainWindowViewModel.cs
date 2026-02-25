@@ -27,6 +27,9 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>Gets or sets the username text entered in the nav-bar login form.</summary>
     [ObservableProperty] private string _loginUsername = string.Empty;
 
+    /// <summary>Gets or sets the password text entered in the nav-bar login form.</summary>
+    [ObservableProperty] private string _loginPassword = string.Empty;
+
     /// <summary>Gets or sets the error message shown when login fails.</summary>
     [ObservableProperty] private string _loginError = string.Empty;
 
@@ -100,6 +103,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _session.Logout();
         LoginUsername = string.Empty;
+        LoginPassword = string.Empty;
         LoginError    = string.Empty;
         NotifySessionChanged();
         _homeVm.Refresh();
@@ -107,13 +111,12 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Authenticates the user with the username from <see cref="LoginUsername"/>
-    /// and the supplied password. Called from NavBar code-behind.
+    /// Authenticates the user using <see cref="LoginUsername"/> and <see cref="LoginPassword"/>.
     /// </summary>
-    /// <param name="password">The plain-text password from the PasswordBox.</param>
-    public async Task LoginAsync(string password)
+    [RelayCommand]
+    private async Task Login()
     {
-        if (string.IsNullOrWhiteSpace(LoginUsername) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(LoginUsername) || string.IsNullOrWhiteSpace(LoginPassword))
         {
             LoginError = "Username and password are required.";
             return;
@@ -124,7 +127,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var result = await _auth.LoginAsync(LoginUsername, password);
+            var result = await _auth.LoginAsync(LoginUsername, LoginPassword);
 
             if (result.Succeeded && result.Token is not null)
             {
@@ -133,6 +136,7 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     _session.Login(user, result.Token);
                     LoginUsername = string.Empty;
+                    LoginPassword = string.Empty;
                     LoginError    = string.Empty;
                     NotifySessionChanged();
                     _homeVm.Refresh();
@@ -151,6 +155,15 @@ public partial class MainWindowViewModel : ObservableObject
         {
             IsLoggingIn = false;
         }
+    }
+
+    /// <summary>
+    /// Authenticates the user. Kept for backward-compatibility with code-behind callers.
+    /// </summary>
+    public Task LoginAsync(string password)
+    {
+        LoginPassword = password;
+        return Login();
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────

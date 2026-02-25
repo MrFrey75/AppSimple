@@ -63,6 +63,9 @@ public partial class UsersViewModel : BaseViewModel
     /// <summary>Gets or sets whether the user is active in the create/edit form.</summary>
     [ObservableProperty] private bool     _formIsActive  = true;
 
+    /// <summary>Gets or sets the plain-text password field for Create mode in the form.</summary>
+    [ObservableProperty] private string _formPassword = string.Empty;
+
     // ─── Computed ──────────────────────────────────────────────────────────
 
     /// <summary>Gets a value indicating whether a user is selected in the DataGrid.</summary>
@@ -185,21 +188,21 @@ public partial class UsersViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Saves the form. In Create mode <paramref name="password"/> is required.
-    /// In Edit mode <paramref name="password"/> is ignored.
-    /// Called from code-behind to supply the PasswordBox value.
+    /// Saves the form using <see cref="FormPassword"/> for Create mode.
     /// </summary>
-    public async Task SaveFormAsync(string password)
+    [RelayCommand]
+    public async Task SaveForm()
     {
         IsBusy = true;
         ClearMessages();
         try
         {
             if (FormMode == FormMode.Create)
-                await CreateUserInternalAsync(password);
+                await CreateUserInternalAsync(FormPassword);
             else if (FormMode == FormMode.Edit && SelectedUser is not null)
                 await UpdateUserInternalAsync();
 
+            FormPassword = string.Empty;
             await LoadAsync();
             FormMode = FormMode.None;
         }
@@ -219,6 +222,15 @@ public partial class UsersViewModel : BaseViewModel
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Saves the form. Kept for backward-compatibility with code-behind callers.
+    /// </summary>
+    public Task SaveFormAsync(string password)
+    {
+        FormPassword = password;
+        return SaveForm();
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────

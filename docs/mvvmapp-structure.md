@@ -1,9 +1,222 @@
 # AppSimple.MvvmApp — Source Map
 
-WPF desktop application targeting `net10.0-windows`. References `AppSimple.Core`
-and `AppSimple.DataLib` **directly** — no WebApi layer required.
+Cross-platform MVVM desktop application built with **Avalonia UI 11.3.12** targeting `net10.0`.
+References `AppSimple.Core` and `AppSimple.DataLib` **directly** — no WebApi layer required.
 
-> **Platform**: Windows only (`net10.0-windows`, `UseWPF=true`).
+> **Platform**: Windows · macOS · Linux (via Avalonia UI)
+
+## Project file
+
+`AppSimple.MvvmApp.csproj`
+
+### NuGet dependencies
+
+| Package | Purpose |
+|---|---|
+| `Avalonia` 11.3.12 | Core Avalonia UI framework |
+| `Avalonia.Desktop` 11.3.12 | Desktop platform support (Windows/macOS/Linux) |
+| `Avalonia.Themes.Fluent` 11.3.12 | Fluent Design theme |
+| `Avalonia.Controls.DataGrid` 11.3.12 | DataGrid control |
+| `Avalonia.Fonts.Inter` 11.3.12 | Inter font family |
+| `CommunityToolkit.Mvvm` 8.x | `ObservableObject`, `[ObservableProperty]`, `[RelayCommand]` |
+| `Microsoft.Extensions.Hosting` 10.x | DI container, IConfiguration |
+
+---
+
+## Directory layout
+
+```
+AppSimple.MvvmApp/
+├── Program.cs                      Avalonia AppBuilder entry point
+├── App.axaml / App.axaml.cs        Application — DI wiring, DB init, DataTemplates, styles
+├── MainWindow.axaml / .axaml.cs    Shell window — NavBar (top) + sidebar + ContentControl
+├── appsettings.json                DB connection string config
+├── Extensions/
+│   └── MvvmAppServiceExtensions.cs AddMvvmAppServices() DI extension
+├── Session/
+│   └── UserSession.cs              Singleton session state (CurrentUser, Token, HasPermission)
+├── Converters/
+│   └── InverseBoolConverter.cs     bool → !bool (for IsVisible bindings)
+├── ViewModels/
+│   ├── BaseViewModel.cs            ObservableObject + IsBusy/Error/Success helpers
+│   ├── HomeViewModel.cs            Landing page — IsLoggedIn, WelcomeText, Refresh()
+│   ├── ProfileViewModel.cs         Own-profile view/edit + ChangePasswordCommand
+│   ├── UsersViewModel.cs           Admin user management — ObservableCollection, CRUD
+│   └── MainWindowViewModel.cs      Navigation + login/logout + LoginCommand (bound)
+├── Views/
+│   ├── HomeView.axaml / .axaml.cs  Public landing page
+│   ├── ProfileView.axaml / .cs     Profile form — password fields bind directly (no code-behind)
+│   └── UsersView.axaml / .cs       DataGrid + right-panel form — password field bound via MVVM
+└── Controls/
+    ├── NavBar.axaml                Top navigation bar UserControl
+    └── NavBar.axaml.cs             Code-behind — Enter-key handling only
+```
+
+---
+
+## Application layout
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  NavBar (56 px, pinned top)                                             │
+│  AppSimple               [username] [password •••] [Log In]             │
+│                          OR:  👤 admin  Admin       [Log Out]           │
+├─────────────┬───────────────────────────────────────────────────────────┤
+│  Left       │  ContentControl — current page (swaps via DataTemplate)   │
+│  Sidebar    │  ┌──────────────────────────────────────────────────────┐ │
+│  (logged-in │  │  HomeView / ProfileView / UsersView                  │ │
+│   only)     │  └──────────────────────────────────────────────────────┘ │
+│  🏠 Home    │                                                            │
+│  👤 Profile │                                                            │
+│  👥 Users*  │                                                            │
+└─────────────┴───────────────────────────────────────────────────────────┘
+* Users nav item visible to Admin role only
+```
+
+---
+
+## Navigation
+
+Page routing is handled by Avalonia's `DataTemplate` system in `App.axaml`. The
+`ContentControl` in `MainWindow` binds to `MainWindowViewModel.CurrentPage`
+(a `BaseViewModel`). When the current page changes, Avalonia automatically selects
+the matching `DataTemplate`:
+
+```xml
+<!-- App.axaml -->
+<Application.DataTemplates>
+    <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+        <v:HomeView />
+    </DataTemplate>
+    <!-- ... etc. -->
+</Application.DataTemplates>
+```
+
+`MainWindowViewModel` exposes three navigation RelayCommands:
+
+| Command | Guard | Navigates to |
+|---|---|---|
+| `NavigateToHomeCommand` | always | `HomeViewModel` |
+| `NavigateToProfileCommand` | `IsLoggedIn` | `ProfileViewModel` (loads user) |
+| `NavigateToUsersCommand` | `IsAdmin` | `UsersViewModel` (loads all users) |
+
+---
+
+## NavBar
+
+The NavBar is a `UserControl` that inherits `DataContext` from `MainWindow`
+(which is `MainWindowViewModel`). Its layout has three columns:
+
+| Column | Content | Condition |
+|---|---|---|
+| Left — app name | "AppSimple" logo text | Always |
+| Right — login form | Username TextBox + Password TextBox (`PasswordChar="•"`) + Log In button | `IsLoggedIn = false` |
+| Right — user chip | Username + role badge + Log Out button | `IsLoggedIn = true` |
+
+> **Avalonia vs WPF**: Avalonia's `TextBox` with `PasswordChar="•"` supports full MVVM
+> binding (unlike WPF's `PasswordBox`). No code-behind password handling is needed.
+> `LoginPassword` is an `[ObservableProperty]` on `MainWindowViewModel`.
+
+---
+
+## MVVM Pattern
+
+All ViewModels extend `BaseViewModel` which extends `CommunityToolkit.Mvvm.ObservableObject`.
+
+| Pattern | Usage |
+|---|---|
+| `[ObservableProperty]` | Auto-generates property + `PropertyChanged` notification |
+| `[NotifyPropertyChangedFor]` | Also notifies dependent computed properties |
+| `[RelayCommand]` | Auto-generates `IRelayCommand` property + `CanExecute` support |
+| `[RelayCommand(CanExecute = "...")]` | Guards commands — nav buttons auto-disable |
+
+---
+
+## ViewModels
+
+### `BaseViewModel`
+
+| Member | Description |
+|---|---|
+| `IsBusy` | True during async operations |
+| `ErrorMessage` / `HasError` | Active error text |
+| `StatusMessage` / `HasMessage` | Active success text |
+| `SetError(msg)` | Sets error, clears success |
+| `SetSuccess(msg)` | Sets success, clears error |
+| `ClearMessages()` | Clears both |
+
+### `HomeViewModel`
+Stateless landing page. Exposes `IsLoggedIn` and `WelcomeText` read from
+`UserSession`. `Refresh()` must be called after login/logout to propagate
+changes to the UI.
+
+### `ProfileViewModel`
+- `LoadAsync()` — fetches current user from DB, refreshes session + form fields
+- `SaveProfileCommand` — persists editable fields
+- `ChangePasswordCommand` — uses `CurrentPassword`, `NewPassword`, `ConfirmPassword` properties (all bound via `TextBox PasswordChar`)
+
+### `UsersViewModel`
+- `Users` — `ObservableCollection<User>` bound to DataGrid
+- `LoadAsync()` — reloads all users from DB
+- `ShowCreateFormCommand` — shows right panel in Create mode
+- `EditSelectedUserCommand` — populates form from selected user
+- `DeleteSelectedUserCommand` — deletes selected user (guards system users)
+- `CancelFormCommand` — hides right panel
+- `SaveFormCommand` — uses `FormPassword` property (bound via `TextBox PasswordChar`); dispatches to create/update depending on `FormMode`
+
+### `MainWindowViewModel`
+- Holds references to all page VMs (singletons)
+- `IsLoggedIn` / `IsAdmin` — derived from `UserSession`
+- `LoginUsername` / `LoginPassword` — observable properties bound to NavBar TextBoxes
+- `LoginCommand` — parameterless RelayCommand; reads `LoginUsername`/`LoginPassword`
+- `NotifySessionChanged()` — raises PropertyChanged for all session-dependent properties
+
+---
+
+## Styles (App.axaml)
+
+The application uses `FluentTheme` with `RequestedThemeVariant="Dark"` plus a
+custom Catppuccin-inspired colour palette applied via style selectors.
+
+| Style/Resource | Description |
+|---|---|
+| `AccentBrush` | Accent blue `#89B4FA` |
+| `SurfaceBrush` | Card background `#181825` |
+| `MantelBrush` | Window background `#1E1E2E` |
+| `OverlayBrush` | Input background `#313244` |
+| `TextBrush` | Primary text `#CDD6F4` |
+| `ErrorBrush` | Error red `#F38BA8` |
+| `SuccessBrush` | Success green `#A6E3A1` |
+| `Button.primary` | Accent-filled button |
+| `Button.danger` | Red destructive button |
+| `Button.success` | Green button |
+| `Button.nav` | Flat transparent sidebar nav button |
+| `Border.card` | Dark card with rounded corners |
+| `TextBlock.title` / `.subtitle` / `.label` / `.error` / `.success` | Typography helpers |
+
+---
+
+## DI registration (App.axaml.cs → `AddMvvmAppServices`)
+
+```csharp
+services.AddCoreServices();                // validators, hasher, user/auth services
+services.AddDataLibServices(connStr);      // Dapper + SQLite repositories
+services.AddMvvmAppServices();             // session, ViewModels, MainWindow
+```
+
+ViewModels are registered as singletons so navigation state (e.g. loaded user
+list) is retained when switching pages.
+
+---
+
+## Default credentials
+
+| Username | Password | Role |
+|---|---|---|
+| `admin` | `Admin123!` | Admin |
+
+The admin user is seeded on first startup via `DbInitializer.SeedAdminUser()`.
+
 
 ## Project file
 

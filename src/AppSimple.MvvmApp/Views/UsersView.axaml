@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Views.UsersView"
+             x:DataType="vm:UsersViewModel">
+
+    <Grid ColumnDefinitions="*,Auto">
+
+        <!-- Left: DataGrid + toolbar -->
+        <DockPanel Grid.Column="0" Margin="0,0,12,0">
+
+            <!-- Toolbar -->
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Margin="0,0,0,10">
+
+                <TextBlock Text="User Management"
+                           Classes="title"
+                           VerticalAlignment="Center" />
+
+                <Button Classes="primary"
+                        Content="＋ Add User"
+                        Command="{Binding ShowCreateFormCommand}" />
+
+                <Button Content="✏️ Edit"
+                        Command="{Binding EditSelectedUserCommand}"
+                        IsEnabled="{Binding HasSelectedUser}" />
+
+                <Button Classes="danger"
+                        Content="🗑 Delete"
+                        Command="{Binding DeleteSelectedUserCommand}"
+                        IsEnabled="{Binding HasSelectedUser}" />
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           IsVisible="{Binding HasMessage}"
+                           Classes="success"
+                           VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasError}"
+                           Classes="error"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- DataGrid -->
+            <DataGrid ItemsSource="{Binding Users}"
+                      SelectedItem="{Binding SelectedUser}"
+                      AutoGenerateColumns="False"
+                      CanUserReorderColumns="False"
+                      CanUserResizeColumns="True"
+                      IsReadOnly="True"
+                      SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username"   Binding="{Binding Username}"   Width="130" />
+                    <DataGridTextColumn Header="Email"      Binding="{Binding Email}"      Width="200" />
+                    <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}"  Width="110" />
+                    <DataGridTextColumn Header="Last Name"  Binding="{Binding LastName}"   Width="110" />
+                    <DataGridTextColumn Header="Role"       Binding="{Binding Role}"       Width="80"  />
+                    <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}"   Width="60"  />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <!-- Right: inline form panel -->
+        <Border Grid.Column="1"
+                Classes="card"
+                Width="300"
+                IsVisible="{Binding IsFormVisible}">
+
+            <ScrollViewer>
+                <StackPanel Spacing="10">
+
+                    <TextBlock Text="{Binding FormTitle}"
+                               FontSize="15" FontWeight="SemiBold" />
+
+                    <TextBlock Text="Username" Classes="label" />
+                    <TextBox Text="{Binding FormUsername}"
+                             Watermark="Username"
+                             IsEnabled="{Binding IsCreateMode}" />
+
+                    <TextBlock Text="Email" Classes="label" />
+                    <TextBox Text="{Binding FormEmail}"
+                             Watermark="user@example.com"
+                             IsEnabled="{Binding IsCreateMode}" />
+
+                    <!-- Password (create only) -->
+                    <StackPanel IsVisible="{Binding ShowPasswordField}" Spacing="4">
+                        <TextBlock Text="Password" Classes="label" />
+                        <TextBox Text="{Binding FormPassword}"
+                                 PasswordChar="•"
+                                 Watermark="Initial password" />
+                    </StackPanel>
+
+                    <TextBlock Text="First Name" Classes="label" />
+                    <TextBox Text="{Binding FormFirstName}" Watermark="First name" />
+
+                    <TextBlock Text="Last Name" Classes="label" />
+                    <TextBox Text="{Binding FormLastName}" Watermark="Last name" />
+
+                    <TextBlock Text="Role" Classes="label" />
+                    <ComboBox SelectedItem="{Binding FormRoleLabel}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="User" />
+                        <ComboBoxItem Content="Admin" />
+                    </ComboBox>
+
+                    <CheckBox Content="Active" IsChecked="{Binding FormIsActive}" />
+
+                    <!-- Status -->
+                    <TextBlock Text="{Binding StatusMessage}"
+                               IsVisible="{Binding HasMessage}"
+                               Classes="success" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding HasError}"
+                               Classes="error" />
+
+                    <!-- Buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="primary"
+                                Content="Save"
+                                Command="{Binding SaveFormCommand}"
+                                IsEnabled="{Binding !IsBusy}" />
+                        <Button Content="Cancel"
+                                Command="{Binding CancelFormCommand}" />
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+    </Grid>
+</UserControl>

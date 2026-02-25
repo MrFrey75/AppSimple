@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+        xmlns:ctrl="using:AppSimple.MvvmApp.Controls"
+        x:Class="AppSimple.MvvmApp.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="AppSimple"
+        Width="1200" Height="750"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E2E">
+
+    <DockPanel>
+
+        <!-- ── Top NavBar ─────────────────────────────────────────── -->
+        <ctrl:NavBar DockPanel.Dock="Top" DataContext="{Binding}" />
+
+        <!-- ── Body ──────────────────────────────────────────────── -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <!-- Left sidebar: only visible when logged in -->
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*"   />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left sidebar -->
+            <Border Grid.Column="0"
+                    Background="#181825"
+                    IsVisible="{Binding IsLoggedIn}"
+                    Padding="8,12">
+                <StackPanel Spacing="4">
+
+                    <Button Classes="nav"
+                            HorizontalAlignment="Stretch"
+                            Content="🏠  Home"
+                            Command="{Binding NavigateToHomeCommand}" />
+
+                    <Button Classes="nav"
+                            HorizontalAlignment="Stretch"
+                            Content="👤  Profile"
+                            Command="{Binding NavigateToProfileCommand}" />
+
+                    <Button Classes="nav"
+                            HorizontalAlignment="Stretch"
+                            Content="👥  Users"
+                            IsVisible="{Binding IsAdmin}"
+                            Command="{Binding NavigateToUsersCommand}" />
+
+                </StackPanel>
+            </Border>
+
+            <!-- Main content area -->
+            <Border Grid.Column="1"
+                    Padding="24">
+                <ContentControl Content="{Binding CurrentPage}" />
+            </Border>
+
+        </Grid>
+    </DockPanel>
+</Window>

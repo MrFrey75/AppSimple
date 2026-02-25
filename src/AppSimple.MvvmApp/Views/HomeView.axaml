@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" MaxWidth="700" HorizontalAlignment="Center" Margin="0,40">
+
+            <!-- Hero -->
+            <Border Classes="card">
+                <StackPanel Spacing="12" HorizontalAlignment="Center">
+                    <TextBlock Text="🚀" FontSize="48" HorizontalAlignment="Center" />
+                    <TextBlock Text="Welcome to AppSimple"
+                               Classes="title"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="A clean-architecture .NET 10 starter solution."
+                               Classes="subtitle"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding WelcomeText}"
+                               HorizontalAlignment="Center"
+                               Foreground="#89B4FA"
+                               FontSize="16" />
+                </StackPanel>
+            </Border>
+
+            <!-- Feature cards -->
+            <WrapPanel HorizontalAlignment="Center" ItemWidth="200">
+
+                <Border Classes="card" Margin="8">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="🛡️" FontSize="28" HorizontalAlignment="Center" />
+                        <TextBlock Text="Secure Auth"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="JWT-based auth with bcrypt password hashing."
+                                   Classes="subtitle"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="8">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="🗄️" FontSize="28" HorizontalAlignment="Center" />
+                        <TextBlock Text="SQLite / Dapper"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Fast micro-ORM data layer with SQLite."
+                                   Classes="subtitle"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="8">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="🖥️" FontSize="28" HorizontalAlignment="Center" />
+                        <TextBlock Text="Cross-platform"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="Runs on Windows, macOS, and Linux via Avalonia UI."
+                                   Classes="subtitle"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+            </WrapPanel>
+
+            <!-- Prompt to log in -->
+            <TextBlock Text="Log in using the form in the top-right corner."
+                       Classes="subtitle"
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding IsLoggedIn, Converter={x:Static BoolConverters.Not}}" />
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

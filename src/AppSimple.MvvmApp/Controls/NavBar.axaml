@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Controls.NavBar"
+             x:DataType="vm:MainWindowViewModel"
+             Background="#11111B"
+             Height="56">
+
+    <Grid Margin="12,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*"    />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- App name -->
+        <TextBlock Grid.Column="0"
+                   Text="AppSimple"
+                   FontSize="18" FontWeight="Bold"
+                   Foreground="#89B4FA"
+                   VerticalAlignment="Center" />
+
+        <!-- Spacer -->
+        <Panel Grid.Column="1" />
+
+        <!-- Right: login form / user info -->
+        <StackPanel Grid.Column="2"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    VerticalAlignment="Center">
+
+            <!-- Not logged in: username + password + button -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="6"
+                        IsVisible="{Binding IsLoggedIn, Converter={x:Static BoolConverters.Not}}">
+
+                <TextBox x:Name="UsernameBox"
+                         Watermark="Username"
+                         Text="{Binding LoginUsername}"
+                         Width="140"
+                         VerticalAlignment="Center"
+                         KeyDown="OnUsernameKeyDown" />
+
+                <TextBox x:Name="PasswordBox"
+                         Watermark="Password"
+                         Text="{Binding LoginPassword}"
+                         PasswordChar="•"
+                         Width="140"
+                         VerticalAlignment="Center"
+                         KeyDown="OnPasswordKeyDown" />
+
+                <Button Classes="primary"
+                        Content="Log In"
+                        Command="{Binding LoginCommand}"
+                        IsEnabled="{Binding !IsLoggingIn}"
+                        VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding LoginError}"
+                           Classes="error"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding LoginError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+
+            <!-- Logged in: username chip + logout -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="10"
+                        IsVisible="{Binding IsLoggedIn}">
+
+                <Border Background="#313244"
+                        CornerRadius="20"
+                        Padding="12,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="👤" />
+                        <TextBlock Text="{Binding CurrentUsername}"
+                                   FontWeight="Medium"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding CurrentRole}"
+                                   Foreground="#89B4FA"
+                                   FontSize="11"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <Button Classes="danger"
+                        Content="Log Out"
+                        Command="{Binding LogoutCommand}" />
+            </StackPanel>
+
+        </StackPanel>
+    </Grid>
+</UserControl>

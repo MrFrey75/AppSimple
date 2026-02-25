@@ -46,6 +46,15 @@ public partial class ProfileViewModel : BaseViewModel
     /// <summary>Gets or sets the date of birth as an ISO-8601 string (yyyy-MM-dd).</summary>
     [ObservableProperty] private string _dobText     = string.Empty;
 
+    /// <summary>Gets or sets the current plain-text password for the change-password form.</summary>
+    [ObservableProperty] private string _currentPassword  = string.Empty;
+
+    /// <summary>Gets or sets the new plain-text password for the change-password form.</summary>
+    [ObservableProperty] private string _newPassword      = string.Empty;
+
+    /// <summary>Gets or sets the confirmation of the new password.</summary>
+    [ObservableProperty] private string _confirmPassword  = string.Empty;
+
     /// <summary>Gets or sets a value indicating whether the password change operation is in progress.</summary>
     [ObservableProperty] private bool _isPasswordBusy;
 
@@ -118,16 +127,15 @@ public partial class ProfileViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Changes the user's password. Called from code-behind to supply PasswordBox values.
+    /// Changes the user's password using <see cref="CurrentPassword"/>,
+    /// <see cref="NewPassword"/>, and <see cref="ConfirmPassword"/>.
     /// </summary>
-    /// <param name="current">The current plain-text password.</param>
-    /// <param name="newPwd">The new plain-text password.</param>
-    /// <param name="confirm">Confirmation of the new password; must match <paramref name="newPwd"/>.</param>
-    public async Task ChangePasswordAsync(string current, string newPwd, string confirm)
+    [RelayCommand]
+    public async Task ChangePassword()
     {
         if (_session.CurrentUser is null) return;
 
-        if (newPwd != confirm)
+        if (NewPassword != ConfirmPassword)
         {
             SetError("New password and confirmation do not match.");
             return;
@@ -137,7 +145,10 @@ public partial class ProfileViewModel : BaseViewModel
         ClearMessages();
         try
         {
-            await _users.ChangePasswordAsync(_session.CurrentUser.Uid, current, newPwd);
+            await _users.ChangePasswordAsync(_session.CurrentUser.Uid, CurrentPassword, NewPassword);
+            CurrentPassword = string.Empty;
+            NewPassword     = string.Empty;
+            ConfirmPassword = string.Empty;
             SetSuccess("Password changed successfully.");
         }
         catch (UnauthorizedException)
@@ -152,5 +163,16 @@ public partial class ProfileViewModel : BaseViewModel
         {
             IsPasswordBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Changes the user's password. Kept for backward-compatibility with code-behind callers.
+    /// </summary>
+    public Task ChangePasswordAsync(string current, string newPwd, string confirm)
+    {
+        CurrentPassword = current;
+        NewPassword     = newPwd;
+        ConfirmPassword = confirm;
+        return ChangePassword();
     }
 }

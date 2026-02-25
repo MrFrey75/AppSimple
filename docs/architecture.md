@@ -62,7 +62,7 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 | `AppSimple.AdminCli` | Console application | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
 | `AppSimple.UserCLI` | Console application | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
 | `AppSimple.WebApp` | ASP.NET Core MVC | WebApi (HTTP) | Browser-based user GUI |
-| `AppSimple.MvvmApp` | WPF application | Core + DataLib (direct) | Offline-capable desktop app using CommunityToolkit.Mvvm |
+| `AppSimple.MvvmApp` | Avalonia UI application | Core + DataLib (direct) | Cross-platform (Windows/macOS/Linux) desktop app using Avalonia UI + CommunityToolkit.Mvvm |
 
 ## Dependency rules
 

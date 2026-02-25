@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Views.ProfileView"
+             x:DataType="vm:ProfileViewModel">
+
+    <ScrollViewer>
+        <StackPanel Spacing="20" MaxWidth="600" HorizontalAlignment="Center" Margin="0,20">
+
+            <TextBlock Text="My Profile" Classes="title" />
+
+            <!-- Info card -->
+            <Border Classes="card">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="140,*">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Username"  Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Username}" VerticalAlignment="Center" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Email"     Classes="label" VerticalAlignment="Center" Margin="0,8,0,0" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Email}" VerticalAlignment="Center" Margin="0,8,0,0" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Role"      Classes="label" VerticalAlignment="Center" Margin="0,8,0,0" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Role}" Foreground="#89B4FA" VerticalAlignment="Center" Margin="0,8,0,0" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Member since" Classes="label" VerticalAlignment="Center" Margin="0,8,0,0" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MemberSince}" Classes="subtitle" VerticalAlignment="Center" Margin="0,8,0,0" />
+                </Grid>
+            </Border>
+
+            <!-- Edit profile -->
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Edit Profile" FontSize="15" FontWeight="SemiBold" />
+
+                    <TextBlock Text="First Name" Classes="label" />
+                    <TextBox Text="{Binding FirstName}" Watermark="First name" />
+
+                    <TextBlock Text="Last Name" Classes="label" />
+                    <TextBox Text="{Binding LastName}" Watermark="Last name" />
+
+                    <TextBlock Text="Phone" Classes="label" />
+                    <TextBox Text="{Binding PhoneNumber}" Watermark="Phone number" />
+
+                    <TextBlock Text="Date of Birth (yyyy-MM-dd)" Classes="label" />
+                    <TextBox Text="{Binding DobText}" Watermark="e.g. 1990-05-20" />
+
+                    <TextBlock Text="Bio" Classes="label" />
+                    <TextBox Text="{Binding Bio}"
+                             Watermark="A short bio…"
+                             AcceptsReturn="True"
+                             Height="80" />
+
+                    <!-- Status messages -->
+                    <TextBlock Text="{Binding StatusMessage}"
+                               IsVisible="{Binding HasMessage}"
+                               Classes="success" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding HasError}"
+                               Classes="error" />
+
+                    <Button Classes="primary"
+                            Content="Save Profile"
+                            Command="{Binding SaveProfileCommand}"
+                            IsEnabled="{Binding !IsBusy}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Change password -->
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Change Password" FontSize="15" FontWeight="SemiBold" />
+
+                    <TextBlock Text="Current Password" Classes="label" />
+                    <TextBox Text="{Binding CurrentPassword}" PasswordChar="•" Watermark="Current password" />
+
+                    <TextBlock Text="New Password" Classes="label" />
+                    <TextBox Text="{Binding NewPassword}" PasswordChar="•" Watermark="New password" />
+
+                    <TextBlock Text="Confirm New Password" Classes="label" />
+                    <TextBox Text="{Binding ConfirmPassword}" PasswordChar="•" Watermark="Confirm new password" />
+
+                    <Button Classes="primary"
+                            Content="Change Password"
+                            Command="{Binding ChangePasswordCommand}"
+                            IsEnabled="{Binding !IsPasswordBusy}" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
