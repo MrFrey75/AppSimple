@@ -32,7 +32,7 @@ public partial class App : Application
         var services = new ServiceCollection();
         services.AddAppLogging(opts =>
         {
-            opts.EnableFile    = config.GetSection("AppLogging")["EnableFile"]    == "true";
+            opts.EnableFile    = config.GetValue("AppLogging:EnableFile", true);
             opts.LogDirectory  = LogPath.Resolve(config.GetSection("AppLogging")["LogDirectory"]);
         });
         services.AddCoreServices();
@@ -52,6 +52,9 @@ public partial class App : Application
         var hasher       = _serviceProvider.GetRequiredService<IPasswordHasher>();
         initializer.Initialize();
         initializer.SeedAdminUser(hasher.Hash("Admin123!"));
+
+        var _logger = _serviceProvider.GetRequiredService<IAppLogger<App>>();
+        _logger.Information("Application initialized with connection string: {ConnectionString}", connectionString);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             desktop.MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
