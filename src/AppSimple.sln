@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSimple.MvvmApp", "AppSim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSimple.UserCLI", "AppSimple.UserCLI\AppSimple.UserCLI.csproj", "{EF688CBC-ECD3-4952-A1AF-43A2139FD85F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppSimple.WebApi", "AppSimple.WebApi\AppSimple.WebApi.csproj", "{1C04A876-BE36-411D-A601-C88B208627E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{EF688CBC-ECD3-4952-A1AF-43A2139FD85F}.Release|x64.Build.0 = Release|Any CPU
 		{EF688CBC-ECD3-4952-A1AF-43A2139FD85F}.Release|x86.ActiveCfg = Release|Any CPU
 		{EF688CBC-ECD3-4952-A1AF-43A2139FD85F}.Release|x86.Build.0 = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Debug|x86.Build.0 = Debug|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|x64.Build.0 = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|x86.ActiveCfg = Release|Any CPU
+		{1C04A876-BE36-411D-A601-C88B208627E2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

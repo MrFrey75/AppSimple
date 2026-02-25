@@ -45,6 +45,9 @@ public partial class App : Application
         services.AddMvvmAppServices();
         _serviceProvider = services.BuildServiceProvider();
 
+        _logger = _serviceProvider.GetRequiredService<IAppLogger<App>>();
+        _logger.Information("Application started.");
+
         // Ensure DB schema + admin seed
         var initializer = _serviceProvider.GetRequiredService<AppSimple.DataLib.Db.DbInitializer>();
         var hasher       = _serviceProvider.GetRequiredService<IPasswordHasher>();
@@ -55,5 +58,7 @@ public partial class App : Application
             desktop.MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 
         base.OnFrameworkInitializationCompleted();
+
+        
     }
 }

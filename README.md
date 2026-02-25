@@ -49,12 +49,12 @@ AppSimple/
 | `AppSimple.DataLib` | `main` | Core (direct) | SQLite + Dapper data access |
 | `AppSimple.UserCLI` | `UserCLI` | Core + DataLib (direct) | End-user console app — role-aware menus, offline-capable |
 | `AppSimple.MvvmApp` | `MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
+| `AppSimple.WebApi` | `WebApi` | Core + DataLib (direct) | ASP.NET Core 10 REST API — JWT auth, role-based access |
 
 ## Future Projects
 
 | Project | Connects via | Purpose |
 |---|---|---|
-| `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core Web API — REST endpoints |
 | `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — manage users, seed data via API |
 | `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core MVC — user-facing GUI served from the browser |
 
@@ -346,10 +346,10 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.DataLib.Tests` — 36 integration tests
 - [x] `AppSimple.UserCLI` — end-user console app (direct Core + DataLib) — **branch: UserCLI**
 - [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
-- [ ] `AppSimple.WebApi` — ASP.NET Core Web API exposing Core services over HTTP
+- [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
 - [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
 - [ ] `AppSimple.WebApp` — ASP.NET Core MVC front-end connecting via WebApi HTTP
-- [ ] Test projects for WebApi, AdminCli, UserCLI, WebApp, MvvmApp
+- [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp
 
 ## Contributing
 
