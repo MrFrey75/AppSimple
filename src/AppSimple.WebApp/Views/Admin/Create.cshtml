@@ -1,0 +1,42 @@
+@model CreateUserViewModel
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<div class="page-header">
+    <div class="page-title">Create User</div>
+</div>
+
+<div class="card" style="max-width: 500px;">
+    @if (Model.Error is not null)
+    {
+        <div class="alert alert-error">@Model.Error</div>
+    }
+
+    <form asp-controller="Admin" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Username">Username</label>
+            <input class="form-control" asp-for="Username" />
+            <span asp-validation-for="Username" style="color: var(--red); font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Email">Email</label>
+            <input class="form-control" asp-for="Email" type="email" />
+            <span asp-validation-for="Email" style="color: var(--red); font-size: 0.8rem;"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" asp-for="Password">Password</label>
+            <input class="form-control" asp-for="Password" />
+            <span asp-validation-for="Password" style="color: var(--red); font-size: 0.8rem;"></span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Create User</button>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,58 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">My Profile</div>
+        <div class="page-subtitle">@Model.Username</div>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a asp-controller="Profile" asp-action="Edit" class="btn btn-primary btn-sm">✏️ Edit Profile</a>
+        <a asp-controller="Profile" asp-action="ChangePassword" class="btn btn-secondary btn-sm">🔒 Change Password</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="info-row">
+        <span class="info-label">Username</span>
+        <span class="info-value">@Model.Username</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value">@Model.Email</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Full Name</span>
+        <span class="info-value">@(Model.FullName ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">First Name</span>
+        <span class="info-value">@(Model.FirstName ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Last Name</span>
+        <span class="info-value">@(Model.LastName ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Phone</span>
+        <span class="info-value">@(Model.PhoneNumber ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Date of Birth</span>
+        <span class="info-value">@(Model.DateOfBirth?.ToString("yyyy-MM-dd") ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Bio</span>
+        <span class="info-value">@(Model.Bio ?? "—")</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Role</span>
+        <span class="info-value">@Model.Role</span>
+    </div>
+    <div class="info-row" style="border-bottom: none;">
+        <span class="info-label">Member Since</span>
+        <span class="info-value">@Model.CreatedAt.ToString("yyyy-MM-dd")</span>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Welcome to AppSimple</div>
+        @if (Model.IsLoggedIn)
+        {
+            <div class="page-subtitle">Hello, @Model.Username!</div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    @if (Model.IsLoggedIn)
+    {
+        <p style="margin-bottom: 1rem; color: var(--subtext);">You are logged in. Use the navigation above to explore the app.</p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-primary">👤 My Profile</a>
+            @if (Model.IsAdmin)
+            {
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary">👥 Manage Users</a>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="margin-bottom: 1rem; color: var(--subtext);">Please log in to access your profile and features.</p>
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">Log In</a>
+    }
+</div>

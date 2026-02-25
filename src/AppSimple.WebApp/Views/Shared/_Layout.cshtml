@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>@ViewData["Title"] - AppSimple</title>
+    <style>
+        /* Catppuccin Mocha palette */
+        :root {
+          --bg: #1e1e2e;
+          --surface: #181825;
+          --overlay: #313244;
+          --text: #cdd6f4;
+          --subtext: #a6adc8;
+          --accent: #89b4fa;
+          --green: #a6e3a1;
+          --red: #f38ba8;
+          --yellow: #f9e2af;
+          --border: #45475a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Navbar */
+        nav.navbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 56px; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+        .navbar-brand { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+        .navbar-nav { display: flex; gap: 0.5rem; flex: 1; }
+        .navbar-nav a { color: var(--text); padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.9rem; }
+        .navbar-nav a:hover, .navbar-nav a.active { background: var(--overlay); color: var(--accent); text-decoration: none; }
+        .navbar-right { display: flex; align-items: center; gap: 0.75rem; }
+        .user-badge { background: var(--overlay); border-radius: 6px; padding: 0.3rem 0.75rem; font-size: 0.85rem; color: var(--subtext); }
+        .role-tag { background: var(--accent); color: var(--bg); border-radius: 4px; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: 600; margin-left: 0.4rem; }
+        .role-tag.admin { background: var(--yellow); }
+
+        /* Main layout */
+        .main-content { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: opacity 0.15s; }
+        .btn:hover { opacity: 0.85; text-decoration: none; }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-danger { background: var(--red); color: var(--bg); }
+        .btn-success { background: var(--green); color: var(--bg); }
+        .btn-secondary { background: var(--overlay); color: var(--text); border: 1px solid var(--border); }
+        .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+        /* Cards */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+
+        /* Forms */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.85rem; color: var(--subtext); margin-bottom: 0.35rem; }
+        .form-control { width: 100%; background: var(--overlay); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 0.5rem 0.75rem; font-size: 0.9rem; outline: none; }
+        .form-control:focus { border-color: var(--accent); }
+
+        /* Alerts */
+        .alert { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .alert-error { background: color-mix(in srgb, var(--red) 20%, transparent); border: 1px solid var(--red); color: var(--red); }
+        .alert-success { background: color-mix(in srgb, var(--green) 20%, transparent); border: 1px solid var(--green); color: var(--green); }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--overlay); color: var(--subtext); font-size: 0.8rem; text-transform: uppercase; padding: 0.6rem 1rem; text-align: left; }
+        td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        tr:hover td { background: color-mix(in srgb, var(--overlay) 50%, transparent); }
+
+        /* Page heading */
+        .page-header { margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 1.8rem; font-weight: 700; }
+        .page-subtitle { color: var(--subtext); font-size: 0.95rem; margin-top: 0.25rem; }
+
+        /* Login form */
+        .login-container { max-width: 420px; margin: 4rem auto; }
+
+        /* Info row in profile */
+        .info-row { display: flex; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+        .info-label { width: 160px; color: var(--subtext); font-size: 0.85rem; flex-shrink: 0; }
+        .info-value { color: var(--text); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a class="navbar-brand" asp-controller="Home" asp-action="Index">AppSimple</a>
+    <div class="navbar-nav">
+        <a asp-controller="Home" asp-action="Index">🏠 Home</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Profile" asp-action="Index">👤 Profile</a>
+        }
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Admin" asp-action="Index">👥 Users</a>
+        }
+    </div>
+    <div class="navbar-right">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <span class="user-badge">
+                @User.Identity.Name
+                <span class="role-tag @(User.IsInRole("Admin") ? "admin" : "")">@(User.IsInRole("Admin") ? "Admin" : "User")</span>
+            </span>
+            <form asp-controller="Auth" asp-action="Logout" method="post" style="margin:0">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-secondary btn-sm">Log Out</button>
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-sm">Log In</a>
+        }
+    </div>
+</nav>
+<div class="main-content">
+    @await Html.PartialAsync("_Notifications")
+    @RenderBody()
+</div>
+</body>
+</html>

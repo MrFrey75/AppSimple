@@ -1,0 +1,56 @@
+@model UserListViewModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Users</div>
+        <div class="page-subtitle">Manage all user accounts</div>
+    </div>
+    <a asp-controller="Admin" asp-action="Create" class="btn btn-primary">+ Create User</a>
+</div>
+
+@if (Model.Error is not null)
+{
+    <div class="alert alert-error">@Model.Error</div>
+}
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Username</td>
+                    <td>@user.Email</td>
+                    <td>@(user.FullName ?? "—")</td>
+                    <td>@(user.Role == 1 ? "Admin" : "User")</td>
+                    <td>@(user.IsActive ? "✅" : "❌")</td>
+                    <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <div style="display: flex; gap: 0.4rem;">
+                            <a asp-controller="Admin" asp-action="Edit" asp-route-uid="@user.Uid" class="btn btn-secondary btn-sm">Edit</a>
+                            <form asp-controller="Admin" asp-action="Delete" asp-route-uid="@user.Uid" method="post" style="margin: 0;"
+                                  onsubmit="return confirm('Delete user @user.Username?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
