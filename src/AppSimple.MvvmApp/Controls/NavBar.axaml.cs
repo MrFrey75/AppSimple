@@ -12,7 +12,8 @@ public partial class NavBar : UserControl
     public NavBar()
     {
         InitializeComponent();
-        ThemeComboBox.ItemsSource = AppSimple.MvvmApp.Services.ThemeManager.ThemeLabels;
+        if (this.FindControl<ComboBox>("ThemeComboBox") is { } combo)
+            combo.ItemsSource = AppSimple.MvvmApp.Services.ThemeManager.ThemeLabels;
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
