@@ -1,4 +1,5 @@
 using AppSimple.Core.Auth;
+using AppSimple.Core.Constants;
 using AppSimple.DataLib.Db;
 using AppSimple.WebApi.Extensions;
 using AppSimple.WebApi.Middleware;
@@ -15,7 +16,7 @@ using (var scope = app.Services.CreateScope())
     var db     = scope.ServiceProvider.GetRequiredService<DbInitializer>();
     var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
     db.Initialize();
-    db.SeedAdminUser(hasher.Hash("Admin123!"));
+    db.SeedAdminUser(hasher.Hash(AppConstants.DefaultAdminPassword));
 }
 
 app.UseMiddleware<ExceptionMiddleware>();

@@ -1,4 +1,5 @@
 using AppSimple.Core.Auth;
+using AppSimple.Core.Constants;
 using AppSimple.Core.Extensions;
 using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
@@ -55,7 +56,7 @@ initializer.Initialize();
 
 // Seed default admin on first run (idempotent — skipped if admin already exists)
 var hasher = provider.GetRequiredService<IPasswordHasher>();
-initializer.SeedAdminUser(hasher.Hash("Admin123!"));
+initializer.SeedAdminUser(hasher.Hash(AppConstants.DefaultAdminPassword));
 
 // ── Run ───────────────────────────────────────────────────────────────────────
 var app = provider.GetRequiredService<App>();

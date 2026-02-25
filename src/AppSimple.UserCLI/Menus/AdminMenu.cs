@@ -1,4 +1,5 @@
 using AppSimple.Core.Common.Exceptions;
+using AppSimple.Core.Constants;
 using AppSimple.Core.Enums;
 using AppSimple.Core.Models;
 using AppSimple.Core.Services;
@@ -9,18 +10,20 @@ namespace AppSimple.UserCLI.Menus;
 
 /// <summary>
 /// Admin-only menu for managing all application users:
-/// list, create, edit, and delete.
+/// list, create, edit, delete, and database reset.
 /// </summary>
 public class AdminMenu
 {
     private readonly IUserService _users;
+    private readonly IDatabaseResetService _resetService;
     private readonly UserSession _session;
 
     /// <summary>Initializes a new instance of <see cref="AdminMenu"/>.</summary>
-    public AdminMenu(IUserService users, UserSession session)
+    public AdminMenu(IUserService users, IDatabaseResetService resetService, UserSession session)
     {
-        _users   = users;
-        _session = session;
+        _users        = users;
+        _resetService = resetService;
+        _session      = session;
     }
 
     /// <summary>Displays the admin user-management menu and loops until Back is selected.</summary>
@@ -35,10 +38,12 @@ public class AdminMenu
             ConsoleUI.WriteMenuItem(2, "Create New User");
             ConsoleUI.WriteMenuItem(3, "Edit a User");
             ConsoleUI.WriteMenuItem(4, "Delete a User");
+            ConsoleUI.WriteMenuGroupLabel("Danger Zone");
+            ConsoleUI.WriteMenuItem(5, "Reset & Reseed Database", "⚠ erases ALL data");
             ConsoleUI.WriteBackItem();
             ConsoleUI.WriteLine();
 
-            int choice = ConsoleUI.ReadMenuChoice(4);
+            int choice = ConsoleUI.ReadMenuChoice(5);
 
             switch (choice)
             {
@@ -47,6 +52,7 @@ public class AdminMenu
                 case 2: await CreateUserAsync(); break;
                 case 3: await EditUserAsync(); break;
                 case 4: await DeleteUserAsync(); break;
+                case 5: await ResetDatabaseAsync(); break;
             }
         }
     }
@@ -224,6 +230,51 @@ public class AdminMenu
         }
 
         ConsoleUI.Pause();
+    }
+
+    // ─── Reset & Reseed ─────────────────────────────────────────────────────
+
+    private async Task ResetDatabaseAsync()
+    {
+        ConsoleUI.Clear();
+        ConsoleUI.WriteHeading("Reset & Reseed Database");
+        ConsoleUI.WriteLine();
+        ConsoleUI.WriteWarning("⚠  WARNING: This operation is IRREVERSIBLE.");
+        ConsoleUI.WriteWarning("   ALL user accounts will be permanently deleted.");
+        ConsoleUI.WriteWarning("   The database will be reseeded with default data.");
+        ConsoleUI.WriteWarning($"  You will be logged out. Log back in as '{AppConstants.DefaultAdminUsername}' / '{AppConstants.DefaultAdminPassword}'.");
+        ConsoleUI.WriteLine();
+
+        if (!ConsoleUI.Confirm("Type YES to confirm the reset"))
+        {
+            ConsoleUI.WriteInfo("Reset cancelled.");
+            ConsoleUI.Pause();
+            return;
+        }
+
+        ConsoleUI.WriteLine();
+        ConsoleUI.WriteInfo("Resetting database...");
+
+        try
+        {
+            await _resetService.ResetAndReseedAsync();
+            ConsoleUI.WriteSuccess("Database reset and reseeded successfully.");
+            ConsoleUI.WriteInfo($"Default admin: '{AppConstants.DefaultAdminUsername}' / '{AppConstants.DefaultAdminPassword}'");
+            ConsoleUI.WriteInfo("Sample users: alice, bob, carol (password: Sample123!)");
+        }
+        catch (Exception ex)
+        {
+            ConsoleUI.WriteError($"Reset failed: {ex.Message}");
+            ConsoleUI.Pause();
+            return;
+        }
+
+        ConsoleUI.WriteLine();
+        ConsoleUI.WriteWarning("You have been logged out. Please log in again.");
+        ConsoleUI.Pause();
+
+        // Force logout — session is now invalid
+        _session.Logout();
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────

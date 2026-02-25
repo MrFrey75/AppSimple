@@ -11,6 +11,9 @@ public static class AppConstants
     /// <summary>The default admin username used during database seeding.</summary>
     public const string DefaultAdminUsername = "admin";
 
+    /// <summary>The default admin password used during initial seeding and database reset.</summary>
+    public const string DefaultAdminPassword = "Admin123!";
+
     /// <summary>The minimum password length enforced by validation.</summary>
     public const int MinPasswordLength = 8;
 

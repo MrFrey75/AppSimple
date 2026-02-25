@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppSimple.Core\AppSimple.Core.csproj" />
+    <ProjectReference Include="..\AppSimple.DataLib\AppSimple.DataLib.csproj" />
   </ItemGroup>
 
 </Project>

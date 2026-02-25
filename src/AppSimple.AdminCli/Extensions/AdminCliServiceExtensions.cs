@@ -2,8 +2,11 @@ using AppSimple.AdminCli.Menus;
 using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Services.Impl;
 using AppSimple.AdminCli.Session;
+using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
 using AppSimple.Core.Logging;
+using AppSimple.DataLib.Db;
+using AppSimple.DataLib.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +33,11 @@ public static class AdminCliServiceExtensions
             opts.EnableFile      = config.GetValue("AppLogging:EnableFile", true);
             opts.LogDirectory    = LogPath.Resolve(config.GetValue("AppLogging:LogDirectory", ""))!;
         });
+
+        // ── Core + DataLib (for direct DB access — reset/reseed only) ─────
+        services.AddCoreServices();
+        services.AddDataLibServices(
+            DatabasePath.Resolve(config["Database:ConnectionString"]));
 
         // ── Typed HttpClient ───────────────────────────────────────────────
         var baseUrl = config["WebApi:BaseUrl"] ?? "http://localhost:5157";

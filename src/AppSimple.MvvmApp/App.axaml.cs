@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AppSimple.Core.Auth;
+using AppSimple.Core.Constants;
 using AppSimple.Core.Extensions;
 using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
@@ -51,7 +52,7 @@ public partial class App : Application
         var initializer = _serviceProvider.GetRequiredService<AppSimple.DataLib.Db.DbInitializer>();
         var hasher       = _serviceProvider.GetRequiredService<IPasswordHasher>();
         initializer.Initialize();
-        initializer.SeedAdminUser(hasher.Hash("Admin123!"));
+        initializer.SeedAdminUser(hasher.Hash(AppConstants.DefaultAdminPassword));
 
         var _logger = _serviceProvider.GetRequiredService<IAppLogger<App>>();
         _logger.Information("Application initialized with connection string: {ConnectionString}", connectionString);
