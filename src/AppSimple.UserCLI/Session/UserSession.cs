@@ -1,4 +1,5 @@
 using AppSimple.Core.Enums;
+using AppSimple.Core.Extensions;
 using AppSimple.Core.Models;
 
 namespace AppSimple.UserCLI.Session;
@@ -46,18 +47,6 @@ public class UserSession
     public bool HasPermission(Permission permission)
     {
         if (_currentUser is null) return false;
-
-        return permission switch
-        {
-            Permission.ViewProfile or
-            Permission.EditProfile => true,
-
-            Permission.ViewUsers or
-            Permission.CreateUser or
-            Permission.EditUser or
-            Permission.DeleteUser => _currentUser.Role == UserRole.Admin,
-
-            _ => false
-        };
+        return _currentUser.Role.HasPermission(permission);
     }
 }
