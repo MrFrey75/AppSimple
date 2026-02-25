@@ -28,21 +28,21 @@ public partial class App : Application
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
+        var connectionString = DatabasePath.Resolve(config[AppConstants.ConfigDatabaseConnectionString]);
 
         var services = new ServiceCollection();
         services.AddAppLogging(opts =>
         {
-            opts.EnableFile    = config.GetValue("AppLogging:EnableFile", true);
-            opts.LogDirectory  = LogPath.Resolve(config.GetSection("AppLogging")["LogDirectory"]);
+            opts.EnableFile    = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
+            opts.LogDirectory  = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
         });
         services.AddCoreServices();
         services.AddJwtAuthentication(opts =>
         {
-            opts.Secret            = config["Jwt:Secret"]   ?? "change-this-secret-in-production-32chars!!";
-            opts.Issuer            = config["Jwt:Issuer"]   ?? "AppSimple";
-            opts.Audience          = config["Jwt:Audience"] ?? "AppSimple";
-            opts.ExpirationMinutes = int.TryParse(config["Jwt:ExpirationMinutes"], out var exp) ? exp : 480;
+            opts.Secret            = config[AppConstants.ConfigJwtSecret]   ?? "change-this-secret-in-production-32chars!!";
+            opts.Issuer            = config[AppConstants.ConfigJwtIssuer]   ?? AppConstants.AppName;
+            opts.Audience          = config[AppConstants.ConfigJwtAudience] ?? AppConstants.AppName;
+            opts.ExpirationMinutes = int.TryParse(config[AppConstants.ConfigJwtExpiration], out var exp) ? exp : AppConstants.DefaultJwtExpirationMinutes;
         });
         services.AddDataLibServices(connectionString);
         services.AddMvvmAppServices();

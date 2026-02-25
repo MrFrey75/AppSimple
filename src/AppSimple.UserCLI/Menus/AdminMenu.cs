@@ -260,7 +260,7 @@ public class AdminMenu
             await _resetService.ResetAndReseedAsync();
             ConsoleUI.WriteSuccess("Database reset and reseeded successfully.");
             ConsoleUI.WriteInfo($"Default admin: '{AppConstants.DefaultAdminUsername}' / '{AppConstants.DefaultAdminPassword}'");
-            ConsoleUI.WriteInfo("Sample users: alice, bob, carol (password: Sample123!)");
+            ConsoleUI.WriteInfo($"Sample users: alice, bob, carol (password: {AppConstants.DefaultSamplePassword})");
         }
         catch (Exception ex)
         {

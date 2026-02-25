@@ -1,4 +1,5 @@
 using AppSimple.Core.Config;
+using AppSimple.Core.Constants;
 using AppSimple.Core.Logging;
 using AppSimple.WebApp.Services;
 using AppSimple.WebApp.Services.Impl;
@@ -17,8 +18,8 @@ public static class WebAppServiceExtensions
 
         builder.Host.UseSerilog((ctx, lc) =>
         {
-            var logDir = LogPath.Resolve(config["AppLogging:LogDirectory"]);
-            var enableFile = config.GetValue("AppLogging:EnableFile", true);
+            var logDir     = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
+            var enableFile = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
             lc.MinimumLevel.Information()
               .Enrich.FromLogContext();
             if (enableFile)
@@ -38,7 +39,7 @@ public static class WebAppServiceExtensions
 
         builder.Services.AddAuthorization();
 
-        var baseUrl = config["WebApi:BaseUrl"] ?? "http://localhost:5157";
+        var baseUrl = config[AppConstants.ConfigWebApiBaseUrl] ?? AppConstants.DefaultWebApiBaseUrl;
         builder.Services.AddHttpClient<IApiClient, ApiClient>(client =>
         {
             client.BaseAddress = new Uri(baseUrl);

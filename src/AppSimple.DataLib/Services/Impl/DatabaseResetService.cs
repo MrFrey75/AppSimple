@@ -66,7 +66,7 @@ public sealed class DatabaseResetService : IDatabaseResetService
             ("carol",  "carol@appsimple.dev",  "Carol",  "Williams"),
         };
 
-        var samplePassword = _hasher.Hash("Sample123!");
+        var samplePassword = _hasher.Hash(AppConstants.DefaultSamplePassword);
         var now            = DateTime.UtcNow.ToString("O");
 
         foreach (var (username, email, firstName, lastName) in sampleUsers)

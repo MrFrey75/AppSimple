@@ -25,8 +25,8 @@ services.AddAppLogging(opts =>
 {
     opts.ApplicationName = "AppSimple.UserCLI";
     opts.EnableConsole   = false;
-    opts.EnableFile      = configuration.GetValue("AppLogging:EnableFile", true);
-    opts.LogDirectory    = LogPath.Resolve(configuration.GetValue("AppLogging:LogDirectory", ""))!;
+    opts.EnableFile      = configuration.GetValue(AppConstants.ConfigLoggingEnableFile, true);
+    opts.LogDirectory    = LogPath.Resolve(configuration.GetValue(AppConstants.ConfigLoggingDirectory, ""))!;
 });
 
 // Core services — validators, password hasher, user service, auth service
@@ -38,7 +38,7 @@ services.AddJwtAuthentication(opts =>
 
 // Data access — SQLite + Dapper repositories
 services.AddDataLibServices(
-    DatabasePath.Resolve(configuration["Database:ConnectionString"]));
+    DatabasePath.Resolve(configuration[AppConstants.ConfigDatabaseConnectionString]));
 
 // CLI-specific services
 services.AddSingleton<UserSession>();

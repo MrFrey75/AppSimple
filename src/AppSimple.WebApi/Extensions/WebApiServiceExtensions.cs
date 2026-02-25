@@ -1,4 +1,5 @@
 using AppSimple.Core.Auth;
+using AppSimple.Core.Constants;
 using AppSimple.Core.Extensions;
 using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
@@ -21,13 +22,13 @@ public static class WebApiServiceExtensions
     public static WebApplicationBuilder AddWebApiServices(this WebApplicationBuilder builder)
     {
         var config           = builder.Configuration;
-        var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
+        var connectionString = DatabasePath.Resolve(config[AppConstants.ConfigDatabaseConnectionString]);
 
         // Core + DataLib
         builder.Services.AddAppLogging(opts =>
         {
-            opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
-            opts.LogDirectory = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+            opts.EnableFile   = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
+            opts.LogDirectory = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
         });
 
         // Wire Serilog into ASP.NET Core's ILogger<T> pipeline (e.g. ExceptionMiddleware)
@@ -35,15 +36,15 @@ public static class WebApiServiceExtensions
         builder.Services.AddCoreServices();
         builder.Services.AddJwtAuthentication(opts =>
         {
-            opts.Secret            = config["Jwt:Secret"]   ?? throw new InvalidOperationException("Jwt:Secret is required.");
-            opts.Issuer            = config["Jwt:Issuer"]   ?? "AppSimple";
-            opts.Audience          = config["Jwt:Audience"] ?? "AppSimple";
-            opts.ExpirationMinutes = config.GetValue("Jwt:ExpirationMinutes", 480);
+            opts.Secret            = config[AppConstants.ConfigJwtSecret]   ?? throw new InvalidOperationException("Jwt:Secret is required.");
+            opts.Issuer            = config[AppConstants.ConfigJwtIssuer]   ?? AppConstants.AppName;
+            opts.Audience          = config[AppConstants.ConfigJwtAudience] ?? AppConstants.AppName;
+            opts.ExpirationMinutes = config.GetValue(AppConstants.ConfigJwtExpiration, AppConstants.DefaultJwtExpirationMinutes);
         });
         builder.Services.AddDataLibServices(connectionString);
 
         // ASP.NET Core authentication with JWT bearer
-        var jwtSecret = config["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret is required.");
+        var jwtSecret = config[AppConstants.ConfigJwtSecret] ?? throw new InvalidOperationException("Jwt:Secret is required.");
         var key       = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
         builder.Services
@@ -55,9 +56,9 @@ public static class WebApiServiceExtensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey         = key,
                     ValidateIssuer           = true,
-                    ValidIssuer              = config["Jwt:Issuer"] ?? "AppSimple",
+                    ValidIssuer              = config[AppConstants.ConfigJwtIssuer] ?? AppConstants.AppName,
                     ValidateAudience         = true,
-                    ValidAudience            = config["Jwt:Audience"] ?? "AppSimple",
+                    ValidAudience            = config[AppConstants.ConfigJwtAudience] ?? AppConstants.AppName,
                     ValidateLifetime         = true,
                     ClockSkew                = TimeSpan.Zero,
                 };
