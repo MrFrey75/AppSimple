@@ -1,14 +1,14 @@
-using AppSimple.WebApp.Config;
+using AppSimple.Core.Config;
 
 namespace AppSimple.WebApp.Services.Impl;
 
 /// <summary>File-backed implementation of <see cref="IThemeService"/>.</summary>
 public sealed class ThemeService : IThemeService
 {
-    private readonly AppConfigService _configService;
+    private readonly IAppConfigService _configService;
 
     /// <summary>Initializes a new instance of <see cref="ThemeService"/>.</summary>
-    public ThemeService(AppConfigService configService)
+    public ThemeService(IAppConfigService configService)
     {
         _configService = configService;
     }
