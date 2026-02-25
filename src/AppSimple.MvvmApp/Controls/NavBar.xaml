@@ -1,0 +1,101 @@
+<UserControl x:Class="AppSimple.MvvmApp.Controls.NavBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Background="{StaticResource NavBarBrush}"
+            BorderBrush="{StaticResource AppBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Height="56"
+            Padding="20,0">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>   <!-- App name -->
+                <ColumnDefinition Width="*"/>      <!-- Left: nav items -->
+                <ColumnDefinition Width="Auto"/>   <!-- Right: login / user info -->
+            </Grid.ColumnDefinitions>
+
+            <!-- ── App name ── -->
+            <TextBlock Grid.Column="0"
+                       Text="AppSimple"
+                       FontSize="18" FontWeight="Bold"
+                       Foreground="{StaticResource AccentBrush}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,36,0"/>
+
+            <!-- ── Left: navigation items ── -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+
+                <!-- Home — always visible -->
+                <Button Content="Home"
+                        Command="{Binding NavigateToHomeCommand}"
+                        Style="{StaticResource NavButtonStyle}"/>
+
+                <!-- My Profile — visible when logged in -->
+                <Button Content="My Profile"
+                        Command="{Binding NavigateToProfileCommand}"
+                        Style="{StaticResource NavButtonStyle}"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}"/>
+
+                <!-- Users — visible to admins only -->
+                <Button Content="Users"
+                        Command="{Binding NavigateToUsersCommand}"
+                        Style="{StaticResource NavButtonStyle}"
+                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}"/>
+
+            </StackPanel>
+
+            <!-- ── Right: login form (when NOT logged in) ── -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibility}}">
+
+                <TextBox x:Name="TxtUsername"
+                         Text="{Binding LoginUsername, UpdateSourceTrigger=PropertyChanged}"
+                         Width="140" Margin="0,0,6,0"
+                         ToolTip="Username"
+                         KeyDown="Username_KeyDown"/>
+
+                <PasswordBox x:Name="PwdBox"
+                             Width="130" Margin="0,0,6,0"
+                             ToolTip="Password"
+                             KeyDown="PasswordBox_KeyDown"/>
+
+                <Button Content="Log In"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="LoginButton_Click"
+                        MinWidth="72"/>
+
+                <TextBlock Text="{Binding LoginError}"
+                           Foreground="{StaticResource ErrorBrush}"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"
+                           MaxWidth="180"
+                           TextWrapping="Wrap"
+                           FontSize="11"/>
+            </StackPanel>
+
+            <!-- ── Right: user info (when logged in) ── -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}">
+
+                <TextBlock Text="{Binding WelcomeText}"
+                           Foreground="{StaticResource SubtleBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+
+                <Button Content="Log Out"
+                        Command="{Binding LogoutCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+            </StackPanel>
+
+        </Grid>
+    </Border>
+
+</UserControl>

@@ -42,9 +42,9 @@ AppSimple/
 |---|---|---|
 | `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core Web API — REST endpoints |
 | `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — seed admin user, manage users via API |
-| `AppSimple.UserCLI` | Core + DataLib (direct) | End-user CLI — local access to Core services, no WebApi required |
+| `AppSimple.UserCLI` | Core + DataLib (direct) | End-user CLI — local access to Core services, no WebApi required — **branch: UserCLI** |
 | `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core MVC — user-facing GUI served from the browser |
-| `AppSimple.MvvmApp` | Core + DataLib (direct) | WPF/MVVM desktop application — offline-capable, uses CommunityToolkit.Mvvm |
+| `AppSimple.MvvmApp` | Core + DataLib (direct) | WPF/MVVM desktop application — offline-capable, uses CommunityToolkit.Mvvm — **branch: MvvmApp** (Windows only) |
 | `AppSimple.WebApi.Tests` | — | Unit + integration tests for Web API |
 | `AppSimple.AdminCli.Tests` | — | Unit tests for Admin CLI |
 | `AppSimple.UserCLI.Tests` | — | Unit tests for User CLI |
@@ -285,9 +285,9 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 
 - [ ] `AppSimple.WebApi` — REST API consuming Core services directly
 - [ ] `AppSimple.AdminCli` — Admin CLI connecting to Core services via the WebApi HTTP layer
-- [ ] `AppSimple.UserCLI` — End-user CLI referencing Core + DataLib directly (no WebApi required)
+- [ ] `AppSimple.UserCLI` — End-user CLI referencing Core + DataLib directly — **branch: UserCLI**
 - [ ] `AppSimple.WebApp` — MVC front-end connecting to Core services via the WebApi HTTP layer
-- [ ] `AppSimple.MvvmApp` — WPF desktop application referencing Core + DataLib directly, using CommunityToolkit.Mvvm
+- [ ] `AppSimple.MvvmApp` — WPF desktop application referencing Core + DataLib directly — **branch: MvvmApp** (Windows only)
 
 ## Contributing
 

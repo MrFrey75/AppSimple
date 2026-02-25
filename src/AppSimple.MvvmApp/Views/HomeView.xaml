@@ -1,0 +1,71 @@
+<UserControl x:Class="AppSimple.MvvmApp.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  Background="{StaticResource BackgroundBrush}">
+        <StackPanel MaxWidth="820" Margin="48,60,48,48"
+                    HorizontalAlignment="Center">
+
+            <!-- Hero -->
+            <TextBlock Text="AppSimple"
+                       FontSize="64" FontWeight="Bold"
+                       Foreground="{StaticResource AccentBrush}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="A clean-architecture .NET 10 starter solution"
+                       FontSize="20"
+                       Foreground="{StaticResource SubtleBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,48"/>
+
+            <!-- Logged-in welcome card -->
+            <Border Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}"
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="{Binding WelcomeText}"
+                               FontSize="22" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock Text="Use the navigation bar above to access your profile or manage users."
+                               Foreground="{StaticResource SubtleBrush}"
+                               Margin="0,8,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Not logged-in prompt -->
+            <Border Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsLoggedIn, Converter={StaticResource InverseBoolToVisibility}}"
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="Welcome to AppSimple"
+                               FontSize="22" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock Text="Log in using the form in the top-right corner of the navigation bar to access your account."
+                               Foreground="{StaticResource SubtleBrush}"
+                               Margin="0,8,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- About card -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="About"
+                               FontSize="16" FontWeight="SemiBold"
+                               Foreground="{StaticResource AccentBrush}"
+                               Margin="0,0,0,10"/>
+                    <TextBlock TextWrapping="Wrap"
+                               Foreground="{StaticResource SubtleBrush}"
+                               LineHeight="22">
+                        AppSimple demonstrates clean architecture, separation of concerns, and
+                        testability on .NET 10 with C# 14. It features BCrypt password hashing,
+                        JWT authentication, Serilog structured logging, FluentValidation input
+                        validation, and SQLite + Dapper data access. The MvvmApp front-end uses
+                        WPF with CommunityToolkit.Mvvm and references Core + DataLib directly.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

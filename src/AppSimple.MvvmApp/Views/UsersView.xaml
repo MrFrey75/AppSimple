@@ -1,0 +1,146 @@
+<UserControl x:Class="AppSimple.MvvmApp.Views.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             >
+
+    <Grid Background="{StaticResource BackgroundBrush}" Margin="32,28,32,32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Title + toolbar ── -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="User Management"
+                       Style="{StaticResource PageTitleStyle}"
+                       VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="＋  Add User"
+                        Command="{Binding ShowCreateFormCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="0,0,8,0"/>
+                <Button Content="✎  Edit"
+                        Command="{Binding EditSelectedUserCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,8,0"
+                        IsEnabled="{Binding HasSelectedUser}"/>
+                <Button Content="✕  Delete"
+                        Command="{Binding DeleteSelectedUserCommand}"
+                        Style="{StaticResource DangerButtonStyle}"
+                        IsEnabled="{Binding HasSelectedUser}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ── Content: DataGrid + form panel ── -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="320"
+                                  MinWidth="0"
+                                  MaxWidth="{Binding IsFormVisible, Converter={StaticResource FormWidthConverter}}"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Users DataGrid -->
+            <DataGrid Grid.Column="0"
+                      ItemsSource="{Binding Users}"
+                      SelectedItem="{Binding SelectedUser}"
+                      Margin="0,0,12,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username"  Binding="{Binding Username}"       Width="160"/>
+                    <DataGridTextColumn Header="Email"     Binding="{Binding Email}"          Width="220"/>
+                    <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}"       Width="160"/>
+                    <DataGridTextColumn Header="Role"      Binding="{Binding Role}"           Width="80"/>
+                    <DataGridTextColumn Header="Active"    Binding="{Binding IsActive}"       Width="60"/>
+                    <DataGridTextColumn Header="System"    Binding="{Binding IsSystem}"       Width="60"/>
+                    <DataGridTextColumn Header="Created"   Binding="{Binding CreatedAt, StringFormat=yyyy-MM-dd}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Right panel: create / edit form -->
+            <Border Grid.Column="1"
+                    Style="{StaticResource CardStyle}"
+                    Visibility="{Binding IsFormVisible, Converter={StaticResource BoolToVisibility}}"
+                    Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="{Binding FormTitle}"
+                                   Style="{StaticResource SectionHeadingStyle}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Username (create only) -->
+                        <StackPanel Visibility="{Binding IsCreateMode, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="Username *" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Text="{Binding FormUsername, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,4,0,10"/>
+
+                            <TextBlock Text="Email *"    Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Text="{Binding FormEmail, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,4,0,10"/>
+
+                            <TextBlock Text="Password *" Style="{StaticResource FormLabelStyle}"/>
+                            <PasswordBox x:Name="FormPasswordBox" Margin="0,4,0,10"/>
+                        </StackPanel>
+
+                        <!-- Username display (edit mode) -->
+                        <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="Username"   Style="{StaticResource FormLabelStyle}"/>
+                            <TextBlock Text="{Binding FormUsername}"
+                                       Style="{StaticResource FormValueStyle}" Margin="0,4,0,10"/>
+                        </StackPanel>
+
+                        <!-- Shared fields -->
+                        <TextBlock Text="First Name"    Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Text="{Binding FormFirstName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Last Name"     Style="{StaticResource FormLabelStyle}"/>
+                        <TextBox Text="{Binding FormLastName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,10"/>
+
+                        <TextBlock Text="Role"          Style="{StaticResource FormLabelStyle}"/>
+                        <ComboBox SelectedItem="{Binding FormRoleLabel}"
+                                  Margin="0,4,0,10">
+                            <ComboBoxItem Content="User"/>
+                            <ComboBoxItem Content="Admin"/>
+                        </ComboBox>
+
+                        <CheckBox Content="Active"
+                                  IsChecked="{Binding FormIsActive}"
+                                  Foreground="{StaticResource TextBrush}"
+                                  Margin="0,0,0,16"/>
+
+                        <!-- Buttons -->
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Save"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Click="SaveButton_Click"
+                                    Margin="0,0,8,0"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"/>
+                            <Button Content="Cancel"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding CancelFormCommand}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- ── Status messages ── -->
+        <Border Grid.Row="2" Background="{StaticResource SuccessBrush}" CornerRadius="6"
+                Padding="14,10" Margin="0,12,0,0"
+                Visibility="{Binding HasSuccess, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{Binding SuccessMessage}"
+                       Foreground="#1E1E2E" FontWeight="SemiBold"/>
+        </Border>
+        <Border Grid.Row="2" Background="{StaticResource ErrorBrush}" CornerRadius="6"
+                Padding="14,10" Margin="0,12,0,0"
+                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="#1E1E2E" FontWeight="SemiBold"/>
+        </Border>
+
+    </Grid>
+
+</UserControl>

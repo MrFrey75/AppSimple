@@ -1,0 +1,23 @@
+<Window x:Class="AppSimple.MvvmApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:AppSimple.MvvmApp.Controls"
+        Title="AppSimple"
+        Background="{StaticResource BackgroundBrush}"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="940" MinHeight="600"
+        Width="1280" Height="780">
+
+    <DockPanel>
+
+        <!-- Navigation bar pinned to the top -->
+        <controls:NavBar DockPanel.Dock="Top"/>
+
+        <!-- Page content area — DataTemplate in App.xaml maps ViewModels → Views -->
+        <ContentControl Content="{Binding CurrentPage}"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"/>
+
+    </DockPanel>
+
+</Window>
