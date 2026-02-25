@@ -1,5 +1,6 @@
 using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
+using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,7 +26,7 @@ public static class WebApiServiceExtensions
         builder.Services.AddAppLogging(opts =>
         {
             opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
-            opts.LogDirectory = config["AppLogging:LogDirectory"] ?? "logs";
+            opts.LogDirectory = LogPath.Resolve(config["AppLogging:LogDirectory"]);
         });
         builder.Services.AddCoreServices();
         builder.Services.AddJwtAuthentication(opts =>

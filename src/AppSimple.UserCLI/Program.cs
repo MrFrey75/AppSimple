@@ -1,5 +1,6 @@
 using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
+using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using AppSimple.UserCLI;
@@ -24,7 +25,7 @@ services.AddAppLogging(opts =>
     opts.ApplicationName = "AppSimple.UserCLI";
     opts.EnableConsole   = false;
     opts.EnableFile      = configuration.GetValue("AppLogging:EnableFile", true);
-    opts.LogDirectory    = configuration.GetValue("AppLogging:LogDirectory", "logs")!;
+    opts.LogDirectory    = LogPath.Resolve(configuration.GetValue("AppLogging:LogDirectory", ""))!;
 });
 
 // Core services — validators, password hasher, user service, auth service

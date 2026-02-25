@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
+using AppSimple.Core.Logging;
 using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using AppSimple.MvvmApp.Extensions;
@@ -32,7 +33,7 @@ public partial class App : Application
         services.AddAppLogging(opts =>
         {
             opts.EnableFile    = config.GetSection("AppLogging")["EnableFile"]    == "true";
-            opts.LogDirectory  = config.GetSection("AppLogging")["LogDirectory"]  ?? "logs";
+            opts.LogDirectory  = LogPath.Resolve(config.GetSection("AppLogging")["LogDirectory"]);
         });
         services.AddCoreServices();
         services.AddJwtAuthentication(opts =>

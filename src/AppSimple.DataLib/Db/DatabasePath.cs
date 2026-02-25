@@ -39,7 +39,10 @@ public static class DatabasePath
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var folder  = Path.Combine(appData, AppFolder);
         Directory.CreateDirectory(folder);
-        return $"Data Source={Path.Combine(folder, DbFile)}";
+
+        var defaultPath = Path.Combine(folder, DbFile);
+
+        return defaultPath;
     }
 
     /// <summary>Gets the resolved absolute path to the database file.</summary>
