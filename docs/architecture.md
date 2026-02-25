@@ -9,7 +9,7 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │               HTTP Clients (connect via WebApi)                  │
-│  WebApp · AdminCli (future)                                      │
+│  WebApp · AdminCli                                               │
 │  - REST calls to WebApi endpoints                                │
 │  - No direct reference to Core or DataLib                        │
 └───────────────────────────────┬──────────────────────────────────┘
@@ -62,7 +62,7 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 | `AppSimple.WebApp` | ASP.NET Core MVC | ✅ Built | WebApi (HTTP) | Browser-based user GUI — dark Catppuccin theme |
 | `AppSimple.UserCLI` | Console application | ✅ Built | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
 | `AppSimple.MvvmApp` | Avalonia UI application | ✅ Built | Core + DataLib (direct) | Cross-platform desktop app (Windows/macOS/Linux) |
-| `AppSimple.AdminCli` | Console application | 🔜 Planned | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
+| `AppSimple.AdminCli` | Console application | ✅ Built | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
 | `AppSimple.MobileApp` | MAUI application | 🔜 Planned | WebApi (HTTP) | Cross-platform mobile app |
 
 ## Dependency rules

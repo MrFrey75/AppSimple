@@ -18,6 +18,7 @@ AppSimple is a .NET 10 starter solution demonstrating clean architecture, separa
 - [AppSimple.MvvmApp](#appsimplemvvmapp)
 - [AppSimple.WebApi](#appsimplewebapi)
 - [AppSimple.WebApp](#appsimplewebapp)
+- [AppSimple.AdminCli](#appsimpleadmincli)
 - [Database schema](#database-schema)
 - [Testing](#testing)
 - [Tech Stack](#tech-stack)
@@ -40,6 +41,7 @@ AppSimple/
 │   ├── AppSimple.MvvmApp/         # Cross-platform Avalonia UI desktop app
 │   ├── AppSimple.WebApi/          # ASP.NET Core 10 REST API with JWT auth
 │   ├── AppSimple.WebApp/          # ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
+│   ├── AppSimple.AdminCli/        # Admin console CLI (connects via WebApi HTTP)
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md   # Code conventions for AI-assisted development
@@ -56,12 +58,12 @@ AppSimple/
 | `AppSimple.MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
 | `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core 10 REST API — JWT auth, role-based access |
 | `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core 10 MVC web front-end — dark theme, cookie session |
+| `AppSimple.AdminCli` | WebApi (HTTP) | Admin console CLI — user management, seeding, smoke tests |
 
 ## Future Projects
 
 | Project | Connects via | Purpose |
 |---|---|---|
-| `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — manage users, seed data via API |
 | `AppSimple.MobileApp` | WebApi (HTTP) | Cross-platform mobile app using MAUI |
 
 ## Architecture
@@ -364,6 +366,31 @@ $HOME/.dotnet/dotnet run
 - **Users page** (Admin only) — user table + create/edit/delete
 - Dark Catppuccin Mocha theme — matches MvvmApp palette
 - No Bootstrap or external CSS — pure CSS variables inline in layout
+
+---
+
+## AppSimple.AdminCli
+
+Full source map: [`docs/admincli-structure.md`](docs/admincli-structure.md)
+
+Admin-only console CLI. Connects to `AppSimple.WebApi` over HTTP — no direct reference to
+Core or DataLib. Rejects logins from non-Admin users before establishing a session.
+
+```bash
+# Start WebApi first, then:
+cd src/AppSimple.AdminCli
+dotnet run
+```
+
+**Requires an Admin account.** Default: `admin` / `Admin123!`
+
+### Features
+
+- Login with Admin-role gate (non-Admin logins rejected at menu level)
+- **User Management** — list, create, view details, edit, delete, change role
+- **System & Health** — live health check, smoke test (3 checks), seed test users
+- Rolling daily log file via Serilog (same shared log directory)
+- No direct Core/DataLib dependency — HTTP only
 
 ---
 
