@@ -33,8 +33,9 @@ AppSimple/
 │   ├── AppSimple.Core.Tests/      # Unit tests for Core (208 tests)
 │   ├── AppSimple.DataLib/         # SQLite/Dapper data access, implements Core interfaces
 │   ├── AppSimple.DataLib.Tests/   # Integration tests for DataLib (36 tests)
-│   ├── AppSimple.UserCLI/         # End-user console app — branch: UserCLI
-│   ├── AppSimple.MvvmApp/         # Cross-platform Avalonia UI desktop app — branch: MvvmApp
+│   ├── AppSimple.UserCLI/         # End-user console app (direct Core + DataLib)
+│   ├── AppSimple.MvvmApp/         # Cross-platform Avalonia UI desktop app
+│   ├── AppSimple.WebApi/          # ASP.NET Core 10 REST API with JWT auth
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md   # Code conventions for AI-assisted development
@@ -43,13 +44,13 @@ AppSimple/
 
 ## Built Projects
 
-| Project | Branch | Connects via | Purpose |
-|---|---|---|---|
-| `AppSimple.Core` | `main` | — | Domain models, services, auth, logging, validators |
-| `AppSimple.DataLib` | `main` | Core (direct) | SQLite + Dapper data access |
-| `AppSimple.UserCLI` | `UserCLI` | Core + DataLib (direct) | End-user console app — role-aware menus, offline-capable |
-| `AppSimple.MvvmApp` | `MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
-| `AppSimple.WebApi` | `WebApi` | Core + DataLib (direct) | ASP.NET Core 10 REST API — JWT auth, role-based access |
+| Project | Connects via | Purpose |
+|---|---|---|
+| `AppSimple.Core` | — | Domain models, services, auth, logging, validators |
+| `AppSimple.DataLib` | Core (direct) | SQLite + Dapper data access |
+| `AppSimple.UserCLI` | Core + DataLib (direct) | End-user console app — role-aware menus, offline-capable |
+| `AppSimple.MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
+| `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core 10 REST API — JWT auth, role-based access |
 
 ## Future Projects
 
@@ -106,15 +107,41 @@ $HOME/.dotnet/dotnet build   AppSimple.sln -c Debug
 $HOME/.dotnet/dotnet test    AppSimple.sln
 ```
 
+## Shared Paths (Database & Logs)
+
+All runtime projects share the same SQLite database and log directory through two static helpers:
+
+| Helper | Namespace | Used for |
+|---|---|---|
+| `DatabasePath.Resolve(configValue?)` | `AppSimple.DataLib.Db` | SQLite connection string |
+| `LogPath.Resolve(configValue?)` | `AppSimple.Core.Logging` | Log file directory |
+
+**Resolution order (same for both):**
+1. Non-empty value from `appsettings.json`
+2. Environment variable (`APPSIMPLE_DB` / `APPSIMPLE_LOGS`)
+3. **OS default** — `~/.local/share/AppSimple/` (Linux/macOS) or `%LOCALAPPDATA%\AppSimple\` (Windows)
+
+Setting the config values to `""` opts in to the shared default — all three runtime projects ship this way.
+
+```bash
+# Override at runtime without editing config:
+export APPSIMPLE_DB=/custom/path/myapp.db
+export APPSIMPLE_LOGS=/custom/path/logs
+```
+
+---
+
 ## DI Wiring (host project startup)
 
 ```csharp
+var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
+var logDir           = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+
 services
     .AddAppLogging(opts =>
     {
-        opts.EnableConsole = true;
-        opts.EnableFile    = true;              // writes to logs/app-.log
-        opts.MinimumLevel  = LogEventLevel.Information;
+        opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
+        opts.LogDirectory = logDir;
     })
     .AddCoreServices()                          // validators, password hasher, services
     .AddJwtAuthentication(opts =>
@@ -122,7 +149,7 @@ services
         opts.Secret            = "your-32-char-minimum-secret-here!!";
         opts.ExpirationMinutes = 60;
     })
-    .AddDataLibServices("Data Source=app.db"); // SQLite connection + repositories
+    .AddDataLibServices(connectionString);      // SQLite connection + repositories
 ```
 
 Then call once at startup:
@@ -187,6 +214,7 @@ Full source map: [`docs/core-structure.md`](docs/core-structure.md)
 | `IAppLogger<T>` | Typed logger — Debug, Information, Warning, Error, Fatal, IsEnabled |
 | `SerilogAppLogger<T>` | Wraps `Log.ForContext<T>()` |
 | `LoggingOptions` | MinimumLevel, EnableConsole, EnableFile, LogDirectory, OutputTemplate, ApplicationName |
+| `LogPath` | Static helper — resolves the shared log directory (config → env var → OS default) |
 
 ### Validators (`Validators/`)
 
@@ -215,6 +243,7 @@ Full source map: [`docs/datalib-structure.md`](docs/datalib-structure.md)
 | `IDbConnectionFactory` | Abstracts connection creation |
 | `SqliteConnectionFactory` | Opens SQLite connections from `DatabaseOptions.ConnectionString` |
 | `DatabaseOptions` | Connection string POCO |
+| `DatabasePath` | Static helper — resolves the shared SQLite connection string (config → env var → OS default) |
 | `DbInitializer` | Creates schema (`Users` table); `SeedAdminUser(hash)` seeds admin row idempotently |
 | `DapperConfig` | Registers Guid and DateTime type handlers for SQLite — call once at startup |
 

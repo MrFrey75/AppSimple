@@ -99,16 +99,18 @@ Authorization: Bearer <token>
 
 ## Configuration (`appsettings.json`)
 
+Leave `ConnectionString` and `LogDirectory` empty to use the shared OS default paths (`~/.local/share/AppSimple/`).
+
 ```json
 {
-  "Database": { "ConnectionString": "Data Source=appsimple.db" },
+  "Database": { "ConnectionString": "" },
   "Jwt": {
     "Secret": "change-this-secret-in-production-32chars!!",
     "Issuer": "AppSimple",
     "Audience": "AppSimple",
     "ExpirationMinutes": 480
   },
-  "AppLogging": { "EnableFile": true, "LogDirectory": "logs" }
+  "AppLogging": { "EnableFile": true, "LogDirectory": "" }
 }
 ```
 

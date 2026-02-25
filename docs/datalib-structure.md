@@ -28,8 +28,29 @@ Opens and returns a ready-to-use `IDbConnection`. Callers are responsible for di
 ### `DatabaseOptions.cs`
 POCO bound from configuration:
 ```json
-{ "Database": { "ConnectionString": "Data Source=app.db" } }
+{ "Database": { "ConnectionString": "" } }
 ```
+Setting `ConnectionString` to an empty string (or omitting it) causes `DatabasePath.Resolve()` to fall back to the shared default location.
+
+### `DatabasePath.cs`
+Static helper that resolves the SQLite connection string for all host projects.
+
+```csharp
+string cs = DatabasePath.Resolve(config["Database:ConnectionString"]);
+// Pass the resolved connection string to AddDataLibServices(cs)
+```
+
+**Resolution priority:**
+
+| Priority | Source | Example value |
+|---|---|---|
+| 1 | `Database:ConnectionString` in `appsettings.json` | any non-empty connection string |
+| 2 | `APPSIMPLE_DB` environment variable | file path — wrapped in `Data Source=...` automatically |
+| 3 | **Default shared location** | `~/.local/share/AppSimple/appsimple.db` (Linux/macOS) / `%LOCALAPPDATA%\AppSimple\appsimple.db` (Windows) |
+
+The directory is created automatically if it does not exist.
+
+`DatabasePath.FilePath(configValue?)` returns the raw file path extracted from any connection string produced by `Resolve()`.
 
 ### `SqliteConnectionFactory.cs`
 Implementation of `IDbConnectionFactory`. Creates and opens a `SqliteConnection` from `DatabaseOptions.ConnectionString`.

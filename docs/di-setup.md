@@ -11,7 +11,29 @@ Complete wiring example for a **direct-reference** host project — one that ref
 | `AppSimple.UserCLI` | `Program.cs` | File-only logging (`EnableConsole = false`) to avoid mixing log output with interactive UI |
 | `AppSimple.MvvmApp` | `App.axaml.cs` via `AddMvvmAppServices()` | Also registers ViewModels and `MainWindow` as singletons/transients |
 
-## Package references
+## Shared paths (database & logs)
+
+All host projects resolve the database and log paths through two static helpers rather than hard-coding paths in `appsettings.json`.
+
+```csharp
+// AppSimple.DataLib.Db.DatabasePath  — returns a SQLite connection string
+string cs      = DatabasePath.Resolve(config["Database:ConnectionString"]);
+
+// AppSimple.Core.Logging.LogPath     — returns a directory path
+string logDir  = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+```
+
+**Resolution priority (same pattern for both):**
+
+| Priority | Source | Notes |
+|---|---|---|
+| 1 | `appsettings.json` value | Must be non-empty to take effect |
+| 2 | Env var (`APPSIMPLE_DB` / `APPSIMPLE_LOGS`) | Override without touching config |
+| 3 | OS default | `~/.local/share/AppSimple/` (Linux) or `%LOCALAPPDATA%\AppSimple\` (Windows) |
+
+Setting the config values to `""` (empty string) is the correct way to opt in to the shared OS default — all three runtime projects ship with this configuration.
+
+
 
 Add these to your host project's `.csproj`:
 
@@ -27,6 +49,10 @@ Add these to your host project's `.csproj`:
 **The order matters.** `AddAppLogging` configures the global Serilog `Log.Logger` — this must happen before any logger is used.
 
 ```csharp
+// Read config
+var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
+var logDir           = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+
 services
     // 1. Configure Serilog global logger + register IAppLogger<> open-generic
     .AddAppLogging(opts =>
@@ -35,7 +61,7 @@ services
         opts.MinimumLevel     = LogEventLevel.Information;
         opts.EnableConsole    = true;
         opts.EnableFile       = true;
-        opts.LogDirectory     = "logs";
+        opts.LogDirectory     = logDir;
         opts.RollingInterval  = RollingInterval.Day;
     })
 
@@ -54,7 +80,7 @@ services
     })
 
     // 4. Register database connection factory, DbInitializer, IUserRepository
-    .AddDataLibServices(connectionString: "Data Source=app.db");
+    .AddDataLibServices(connectionString);
 ```
 
 ## Startup / bootstrap
@@ -146,29 +172,33 @@ public class MyService
 }
 ```
 
-## Configuration via appsettings.json (ASP.NET Core example)
+## Configuration via appsettings.json
+
+Leave `ConnectionString` and `LogDirectory` empty to use the shared OS default paths. Set them to non-empty values to override.
 
 ```json
 {
+  "Database": { "ConnectionString": "" },
+  "AppLogging": { "EnableFile": true, "LogDirectory": "" },
   "Jwt": {
     "Secret": "your-secret-key-must-be-32-chars!!",
     "Issuer": "MyApp",
     "Audience": "MyApp",
     "ExpirationMinutes": 60
-  },
-  "Database": {
-    "ConnectionString": "Data Source=app.db"
   }
 }
 ```
 
 ```csharp
 services
-    .AddAppLogging()
+    .AddAppLogging(opts =>
+    {
+        opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
+        opts.LogDirectory = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+    })
     .AddCoreServices()
     .AddJwtAuthentication(opts => configuration.GetSection("Jwt").Bind(opts))
-    .AddDataLibServices(configuration.GetConnectionString("Default")
-        ?? configuration["Database:ConnectionString"]!);
+    .AddDataLibServices(DatabasePath.Resolve(config["Database:ConnectionString"]));
 ```
 
 ## Exception → HTTP status mapping (global handler example)
