@@ -19,6 +19,8 @@ public partial class UsersViewModel : BaseViewModel
 {
     private readonly IUserService _users;
 
+    // ─── Observable state ──────────────────────────────────────────────────
+
     /// <summary>Gets the live collection of all users displayed in the DataGrid.</summary>
     public ObservableCollection<User> Users { get; } = new();
 
@@ -96,8 +98,6 @@ public partial class UsersViewModel : BaseViewModel
     {
         _users = users;
     }
-
-    /// <summary>Loads all users from the database into <see cref="Users"/>.</summary>
     public async Task LoadAsync()
     {
         IsBusy = true;

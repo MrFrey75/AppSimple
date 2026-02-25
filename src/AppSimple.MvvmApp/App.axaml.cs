@@ -25,10 +25,22 @@ public partial class App : Application
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        var connectionString = config["ConnectionString"] ?? "Data Source=appsimple.db";
+        var connectionString = config["Database:ConnectionString"] ?? "Data Source=appsimple.db";
 
         var services = new ServiceCollection();
+        services.AddAppLogging(opts =>
+        {
+            opts.EnableFile    = config.GetSection("AppLogging")["EnableFile"]    == "true";
+            opts.LogDirectory  = config.GetSection("AppLogging")["LogDirectory"]  ?? "logs";
+        });
         services.AddCoreServices();
+        services.AddJwtAuthentication(opts =>
+        {
+            opts.Secret            = config["Jwt:Secret"]   ?? "change-this-secret-in-production-32chars!!";
+            opts.Issuer            = config["Jwt:Issuer"]   ?? "AppSimple";
+            opts.Audience          = config["Jwt:Audience"] ?? "AppSimple";
+            opts.ExpirationMinutes = int.TryParse(config["Jwt:ExpirationMinutes"], out var exp) ? exp : 480;
+        });
         services.AddDataLibServices(connectionString);
         services.AddMvvmAppServices();
         _serviceProvider = services.BuildServiceProvider();

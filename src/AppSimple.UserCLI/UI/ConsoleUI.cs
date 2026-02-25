@@ -16,7 +16,8 @@ public static class ConsoleUI
     /// <summary>Clears the screen and optionally redraws the application header.</summary>
     public static void Clear(bool showHeader = true)
     {
-        Console.Clear();
+        try { Console.Clear(); }
+        catch (IOException) { /* Non-interactive environment (CI, tests) */ }
         if (showHeader) WriteHeader();
     }
 
@@ -149,6 +150,14 @@ public static class ConsoleUI
         Console.Write("  ");
         WriteColor($"{prompt}: ", ConsoleColor.White, newLine: false);
 
+        // When stdin is redirected (CI, dotnet test) Console.ReadKey is unavailable.
+        if (Console.IsInputRedirected)
+        {
+            var line = Console.ReadLine() ?? string.Empty;
+            Console.WriteLine();
+            return line;
+        }
+
         var sb = new System.Text.StringBuilder();
         while (true)
         {
@@ -211,6 +220,14 @@ public static class ConsoleUI
     {
         Console.WriteLine();
         WriteColor($"  {message}", ConsoleColor.DarkGray);
+
+        // When stdin is redirected (CI, dotnet test) Console.ReadKey is unavailable.
+        if (Console.IsInputRedirected)
+        {
+            Console.ReadLine();
+            return;
+        }
+
         Console.ReadKey(intercept: true);
     }
 
@@ -273,9 +290,9 @@ public static class ConsoleUI
 
     private static void WriteColor(string text, ConsoleColor color, bool newLine = true)
     {
-        Console.ForegroundColor = color;
+        if (!Console.IsOutputRedirected) Console.ForegroundColor = color;
         if (newLine) Console.WriteLine(text);
         else Console.Write(text);
-        Console.ResetColor();
+        if (!Console.IsOutputRedirected) Console.ResetColor();
     }
 }
