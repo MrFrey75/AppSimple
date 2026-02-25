@@ -61,4 +61,22 @@ Interactive console — connects directly to the local SQLite database (no WebAp
   - `logs/` — Serilog structured log files
   - `config.json` — theme and app preferences
 - The database schema is auto-initialized on first run.
+- Default credentials: username `admin`, password `Admin123!`
 - Default ports can be changed in each project's `appsettings.json`.
+
+---
+
+## Database Reset & Reseed
+
+> ⚠ **Warning**: This operation erases **all** user data and cannot be undone.
+
+The reset/reseed feature is available in **UserCLI** and **AdminCli** for admin users only:
+
+- **UserCLI**: Login as admin → Main Menu → Admin → Option 5 "Reset & Reseed Database"
+- **AdminCli**: Login as admin → Main Menu → System & Health → Option 4 "Reset & Reseed Database"
+
+After reset:
+- All existing users are deleted
+- Default admin is re-created: `admin` / `Admin123!`
+- Three sample users are seeded: `alice`, `bob`, `carol` (password: `Sample123!`)
+- All active sessions are invalidated — you will be logged out automatically
