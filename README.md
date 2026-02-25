@@ -10,7 +10,7 @@ AppSimple is a .NET 10 starter solution demonstrating clean architecture, separa
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Shared Paths (Database & Logs)](#shared-paths-database--logs)
+- [Shared Paths (Database, Logs & Config)](#shared-paths-database-logs--config)
 - [DI Wiring (host project startup)](#di-wiring-host-project-startup)
 - [AppSimple.Core](#appsimplecore)
 - [AppSimple.DataLib](#appsimpledatalib)
@@ -112,30 +112,22 @@ $HOME/.dotnet/dotnet build   AppSimple.sln -c Debug
 $HOME/.dotnet/dotnet test    AppSimple.sln
 ```
 
-## Shared Paths (Database & Logs)
+## Shared Paths (Database, Logs & Config)
 
-All runtime projects share the same SQLite database and log directory through two static helpers:
+All runtime projects share the same SQLite database, log directory, and app config through static path helpers:
 
 | Helper | Namespace | Used for |
-    .AddDataLibServices(connectionString);      // SQLite connection + repositories
-```
-
 |---|---|---|
 | `DatabasePath.Resolve(configValue?)` | `AppSimple.DataLib.Db` | SQLite connection string |
 | `LogPath.Resolve(configValue?)` | `AppSimple.Core.Logging` | Log file directory |
+| `AppConfigPath.Resolve(configValue?)` | `AppSimple.Core.Config` | `config.json` (theme selection) |
 
-**Resolution order (same for both):**
+**Resolution order (same for all):**
 1. Non-empty value from `appsettings.json`
-2. Environment variable (`APPSIMPLE_DB` / `APPSIMPLE_LOGS`)
+2. Environment variable (`APPSIMPLE_DB` / `APPSIMPLE_LOGS` / `APPSIMPLE_CONFIG`)
 3. **OS default** — `~/.local/share/AppSimple/` (Linux/macOS) or `%LOCALAPPDATA%\AppSimple\` (Windows)
 
-Setting the config values to `""` opts in to the shared default — all three runtime projects ship this way.
-
-```bash
-# Override at runtime without editing config:
-export APPSIMPLE_DB=/custom/path/myapp.db
-export APPSIMPLE_LOGS=/custom/path/logs
-```
+Setting the config values to `""` opts in to the shared default — all runtime projects ship this way.
 
 ---
 
@@ -338,7 +330,7 @@ $HOME/.dotnet/dotnet run
 - Left sidebar nav — items change based on logged-in role/permissions
 - **Profile page** — view read-only info, edit profile fields, change password
 - **Users page** (Admin only) — DataGrid + inline create/edit form panel
-- Dark theme — Fluent Design + Catppuccin colour palette
+- Dark theme — Fluent Design + runtime-switchable theme (5 themes, persisted to `config.json`)
 - Full MVVM — `[ObservableProperty]` + `[RelayCommand]` (CommunityToolkit.Mvvm), no code-behind password handling
 
 ---
@@ -368,7 +360,7 @@ $HOME/.dotnet/dotnet run
 - Login form → JWT from WebApi stored as cookie claim
 - **Profile page** — view, edit profile fields, change password
 - **Users page** (Admin only) — user table + create/edit/delete
-- Dark Catppuccin Mocha theme — matches MvvmApp palette
+- Runtime-switchable themes (5 themes, persisted to shared `config.json`) — matches MvvmApp palette
 - No Bootstrap or external CSS — pure CSS variables inline in layout
 
 ---

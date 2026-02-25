@@ -169,20 +169,38 @@ Task<bool> DeleteUserAsync(string token, Guid uid);
 
 ## Theme
 
-Dark Catppuccin Mocha palette — matches `AppSimple.MvvmApp`. All CSS is inlined in `_Layout.cshtml` (no static file dependency).
+Supports 5 runtime-switchable themes. The selected theme is persisted to `~/.local/share/AppSimple/config.json` (shared with all AppSimple apps). Users switch via the dropdown in the navbar — the page reloads with the new CSS variables applied.
 
-| Variable | Value | Usage |
-|---|---|---|
-| `--bg` | `#1e1e2e` | Window / page background |
-| `--surface` | `#181825` | Navbar, cards |
-| `--overlay` | `#313244` | Input backgrounds, hover |
-| `--text` | `#cdd6f4` | Primary text |
-| `--subtext` | `#a6adc8` | Labels, secondary text |
-| `--accent` | `#89b4fa` | Links, buttons, focus rings |
-| `--green` | `#a6e3a1` | Success state |
-| `--red` | `#f38ba8` | Error / danger state |
-| `--yellow` | `#f9e2af` | Admin role tag |
-| `--border` | `#45475a` | Borders, dividers |
+| Theme | Style |
+|-------|-------|
+| Catppuccin Mocha | Dark, blue accent — default |
+| Catppuccin Latte | Light, Catppuccin palette |
+| Dracula | Dark, purple accent |
+| Nord | Dark, cool cyan accent |
+| Solarized Light | Light, warm background |
+
+All CSS variables are defined per-theme in `Services/ThemeDefinitions.cs` and injected into `_Layout.cshtml` via `IThemeService`. No static files required.
+
+| Variable | Usage |
+|---|---|
+| `--bg` | Page background |
+| `--surface` | Navbar, cards |
+| `--overlay` | Input backgrounds, hover |
+| `--text` | Primary text |
+| `--subtext` | Labels, secondary text |
+| `--accent` | Links, buttons, focus rings |
+| `--green` | Success state |
+| `--red` | Error / danger state |
+| `--yellow` | Admin role tag |
+| `--border` | Borders, dividers |
+| `--navbar` | Navbar background |
+
+Theme config files:
+- `Config/AppConfig.cs` — `DefaultTheme` + `SelectedTheme`
+- `Config/AppConfigPath.cs` — resolves path to `~/.local/share/AppSimple/config.json`
+- `Config/AppConfigService.cs` — reads/writes JSON
+- `Services/IThemeService.cs` + `Services/Impl/ThemeService.cs` — service layer
+- `Controllers/ThemeController.cs` — `POST /theme/set?theme=Nord`
 
 ---
 

@@ -173,26 +173,40 @@ changes to the UI.
 
 ---
 
-## Styles (App.axaml)
+## Themes (App.axaml + Themes/)
 
-The application uses `FluentTheme` with `RequestedThemeVariant="Dark"` plus a
-custom Catppuccin-inspired colour palette applied via style selectors.
+Supports 5 runtime-switchable themes. The selected theme is persisted to `~/.local/share/AppSimple/config.json` (shared with all AppSimple apps). Users switch via a `ComboBox` in the NavBar.
 
-| Style/Resource | Description |
+| Theme | Style |
+|-------|-------|
+| Catppuccin Mocha | Dark, blue accent — default |
+| Catppuccin Latte | Light, Catppuccin palette |
+| Dracula | Dark, purple accent |
+| Nord | Dark, cool cyan accent |
+| Solarized Light | Light, warm background |
+
+Each theme is a `ResourceDictionary` in `Themes/ThemeName.axaml` providing 17 `ThemeXxxBrush` keys. `ThemeManager` swaps `Application.Resources.MergedDictionaries[0]` at runtime — `DynamicResource` bindings in `App.axaml` styles and individual views update automatically.
+
+| Resource Key | Usage |
 |---|---|
-| `AccentBrush` | Accent blue `#89B4FA` |
-| `SurfaceBrush` | Card background `#181825` |
-| `MantelBrush` | Window background `#1E1E2E` |
-| `OverlayBrush` | Input background `#313244` |
-| `TextBrush` | Primary text `#CDD6F4` |
-| `ErrorBrush` | Error red `#F38BA8` |
-| `SuccessBrush` | Success green `#A6E3A1` |
-| `Button.primary` | Accent-filled button |
-| `Button.danger` | Red destructive button |
-| `Button.success` | Green button |
-| `Button.nav` | Flat transparent sidebar nav button |
-| `Border.card` | Dark card with rounded corners |
-| `TextBlock.title` / `.subtitle` / `.label` / `.error` / `.success` | Typography helpers |
+| `ThemeWindowBrush` | Window / page background |
+| `ThemeSurfaceBrush` | Card backgrounds |
+| `ThemeNavBarBrush` | Nav bar background |
+| `ThemeOverlayBrush` | Input/control backgrounds |
+| `ThemeBorderBrush` | Borders |
+| `ThemeTextBrush` | Primary text |
+| `ThemeSubtextBrush` | Labels, secondary text |
+| `ThemeAccentBrush` | Accent colour |
+| `ThemeErrorBrush` | Error / danger |
+| `ThemeSuccessBrush` | Success / green |
+| `ThemeButtonBrush` / `ThemeButtonHoverBrush` | Default button states |
+| `ThemeDataGridBgBrush` / `ThemeDataGridSelBrush` | DataGrid |
+| `ThemeNavButtonHoverBrush` | Sidebar nav buttons |
+
+Theme-related files:
+- `Themes/` — 5 AXAML ResourceDictionary files
+- `Services/ThemeManager.cs` — applies saved theme on startup; switches at runtime
+- Core: `IAppConfigService` — reads/writes `config.json`
 
 ---
 
