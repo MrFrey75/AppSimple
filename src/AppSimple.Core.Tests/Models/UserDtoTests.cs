@@ -1,3 +1,4 @@
+using AppSimple.Core.Enums;
 using AppSimple.Core.Models.DTOs;
 
 namespace AppSimple.Core.Tests.Models;
@@ -10,19 +11,19 @@ public sealed class UserDtoTests
     {
         var dto = new UserDto();
 
-        Assert.Equal(Guid.Empty, dto.Uid);
-        Assert.Equal(string.Empty, dto.Username);
-        Assert.Equal(string.Empty, dto.Email);
+        Assert.Equal(Guid.Empty,    dto.Uid);
+        Assert.Equal(string.Empty,  dto.Username);
+        Assert.Equal(string.Empty,  dto.Email);
         Assert.Null(dto.FirstName);
         Assert.Null(dto.LastName);
         Assert.Null(dto.FullName);
         Assert.Null(dto.PhoneNumber);
         Assert.Null(dto.Bio);
         Assert.Null(dto.DateOfBirth);
-        Assert.Equal(0, dto.Role);
+        Assert.Equal(UserRole.User, dto.Role);
         Assert.False(dto.IsActive);
         Assert.False(dto.IsSystem);
-        Assert.Equal(default, dto.CreatedAt);
+        Assert.Equal(default,       dto.CreatedAt);
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public sealed class UserDtoTests
             PhoneNumber = "+1-555-0100",
             Bio         = "Developer",
             DateOfBirth = new DateTime(1990, 1, 1),
-            Role        = 1,
+            Role        = UserRole.Admin,
             IsActive    = true,
             IsSystem    = false,
             CreatedAt   = now,
@@ -57,23 +58,22 @@ public sealed class UserDtoTests
         Assert.Equal("+1-555-0100",          dto.PhoneNumber);
         Assert.Equal("Developer",            dto.Bio);
         Assert.Equal(new DateTime(1990,1,1), dto.DateOfBirth);
-        Assert.Equal(1,                      dto.Role);
+        Assert.Equal(UserRole.Admin,         dto.Role);
         Assert.True(dto.IsActive);
         Assert.False(dto.IsSystem);
         Assert.Equal(now,                    dto.CreatedAt);
     }
 
     [Fact]
-    public void UserDto_Role_ZeroRepresentsUser()
+    public void UserDto_Role_DefaultIsUser()
     {
-        var dto = new UserDto { Role = 0 };
-        Assert.Equal(0, dto.Role);
+        Assert.Equal(UserRole.User, new UserDto().Role);
     }
 
     [Fact]
-    public void UserDto_Role_OneRepresentsAdmin()
+    public void UserDto_Role_CanBeSetToAdmin()
     {
-        var dto = new UserDto { Role = 1 };
-        Assert.Equal(1, dto.Role);
+        var dto = new UserDto { Role = UserRole.Admin };
+        Assert.Equal(UserRole.Admin, dto.Role);
     }
 }

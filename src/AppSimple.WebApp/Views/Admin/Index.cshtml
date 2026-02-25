@@ -36,7 +36,7 @@
                     <td>@user.Username</td>
                     <td>@user.Email</td>
                     <td>@(user.FullName ?? "—")</td>
-                    <td>@(user.Role == 1 ? "Admin" : "User")</td>
+                    <td>@user.Role.ToString()</td>
                     <td>@(user.IsActive ? "✅" : "❌")</td>
                     <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
                     <td>

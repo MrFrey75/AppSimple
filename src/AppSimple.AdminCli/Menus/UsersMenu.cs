@@ -1,6 +1,7 @@
 using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Session;
 using AppSimple.AdminCli.UI;
+using AppSimple.Core.Enums;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models.DTOs;
 using AppSimple.Core.Models.Requests;
@@ -226,7 +227,7 @@ public sealed class UsersMenu
 
         ConsoleUI.Clear();
         ConsoleUI.WriteHeading($"Change Role: {u.Username}");
-        ConsoleUI.WriteInfo($"Current role: {(u.Role == 1 ? "Admin" : "User")}");
+        ConsoleUI.WriteInfo($"Current role: {(u.Role == UserRole.Admin ? "Admin" : "User")}");
         ConsoleUI.WriteLine();
         ConsoleUI.WriteMenuItem(1, "Admin");
         ConsoleUI.WriteMenuItem(2, "User");

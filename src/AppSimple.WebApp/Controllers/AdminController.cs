@@ -86,7 +86,7 @@ public sealed class AdminController : Controller
             PhoneNumber = user.PhoneNumber,
             Bio = user.Bio,
             DateOfBirth = user.DateOfBirth,
-            Role = user.Role,
+            Role = (int)user.Role,
             IsActive = user.IsActive
         });
     }

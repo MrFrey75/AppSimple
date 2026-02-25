@@ -1,3 +1,4 @@
+using AppSimple.Core.Models.DTOs;
 using AppSimple.Core.Models.Requests;
 using AppSimple.Core.Services;
 using AppSimple.WebApi.DTOs;

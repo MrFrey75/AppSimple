@@ -1,4 +1,5 @@
 using AppSimple.AdminCli.Services;
+using AppSimple.Core.Enums;
 using AppSimple.Core.Models.DTOs;
 
 namespace AppSimple.AdminCli.UI;
@@ -247,7 +248,7 @@ public static class ConsoleUI
         for (int i = 0; i < list.Count; i++)
         {
             var u = list[i];
-            string roleLabel   = u.Role == 1 ? "Admin" : "User";
+            string roleLabel   = u.Role == UserRole.Admin ? "Admin" : "User";
             string activeLabel = u.IsActive ? "Yes" : "No";
             ConsoleColor rowColor = u.IsSystem ? ConsoleColor.DarkYellow : ConsoleColor.White;
             string sysTag = u.IsSystem ? " ⚙" : "";
@@ -277,7 +278,7 @@ public static class ConsoleUI
         Row("Phone",        user.PhoneNumber);
         Row("Date of Birth",user.DateOfBirth?.ToString("yyyy-MM-dd"));
         Row("Bio",          user.Bio);
-        Row("Role",         user.Role == 1 ? "Admin" : "User");
+        Row("Role",         user.Role == UserRole.Admin ? "Admin" : "User");
         Row("Active",       user.IsActive ? "Yes" : "No");
         Row("System",       user.IsSystem ? "Yes" : "No");
         Row("Created At",   user.CreatedAt.ToString("yyyy-MM-dd HH:mm"));

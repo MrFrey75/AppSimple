@@ -1,3 +1,4 @@
+using AppSimple.Core.Enums;
 using AppSimple.Core.Models.Requests;
 using System.Security.Claims;
 using AppSimple.WebApp.Models;
@@ -48,7 +49,7 @@ public sealed class ProfileController : Controller
             PhoneNumber = user.PhoneNumber,
             Bio = user.Bio,
             DateOfBirth = user.DateOfBirth,
-            Role = user.Role == 1 ? "Admin" : "User",
+            Role = user.Role == UserRole.Admin ? "Admin" : "User",
             CreatedAt = user.CreatedAt
         });
     }
