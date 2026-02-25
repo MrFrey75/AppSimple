@@ -1,3 +1,4 @@
+@inject AppSimple.WebApp.Services.IThemeService ThemeService
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,18 +7,7 @@
     <title>@ViewData["Title"] - AppSimple</title>
     <style>
         /* Catppuccin Mocha palette */
-        :root {
-          --bg: #1e1e2e;
-          --surface: #181825;
-          --overlay: #313244;
-          --text: #cdd6f4;
-          --subtext: #a6adc8;
-          --accent: #89b4fa;
-          --green: #a6e3a1;
-          --red: #f38ba8;
-          --yellow: #f9e2af;
-          --border: #45475a;
-        }
+        :root { @Html.Raw(ThemeService.GetCurrentThemeCss()) }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
         a { color: var(--accent); text-decoration: none; }
@@ -96,6 +86,23 @@
         }
     </div>
     <div class="navbar-right">
+        <form asp-controller="Theme" asp-action="Set" method="post" style="margin:0;display:flex;align-items:center;gap:0.4rem">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+            <select name="theme" onchange="this.form.submit()" style="background:var(--overlay);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:0.3rem 0.5rem;font-size:0.8rem;cursor:pointer">
+                @foreach (var (name, label) in AppSimple.WebApp.Services.ThemeDefinitions.Names.Zip(AppSimple.WebApp.Services.ThemeDefinitions.Labels))
+                {
+                    if (name == ThemeService.GetCurrentTheme())
+                    {
+                        <option value="@name" selected>🎨 @label</option>
+                    }
+                    else
+                    {
+                        <option value="@name">🎨 @label</option>
+                    }
+                }
+            </select>
+        </form>
         @if (User.Identity?.IsAuthenticated == true)
         {
             <span class="user-badge">

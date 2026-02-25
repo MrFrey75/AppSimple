@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="ThemeWindowBrush"          Color="#282A36" />
+    <SolidColorBrush x:Key="ThemeSurfaceBrush"         Color="#1E1F29" />
+    <SolidColorBrush x:Key="ThemeOverlayBrush"         Color="#44475A" />
+    <SolidColorBrush x:Key="ThemeTextBrush"            Color="#F8F8F2" />
+    <SolidColorBrush x:Key="ThemeSubtextBrush"         Color="#6272A4" />
+    <SolidColorBrush x:Key="ThemeAccentBrush"          Color="#BD93F9" />
+    <SolidColorBrush x:Key="ThemeAccentHoverBrush"     Color="#CFA8FB" />
+    <SolidColorBrush x:Key="ThemeButtonBrush"          Color="#44475A" />
+    <SolidColorBrush x:Key="ThemeButtonHoverBrush"     Color="#565967" />
+    <SolidColorBrush x:Key="ThemeButtonPressedBrush"   Color="#313244" />
+    <SolidColorBrush x:Key="ThemeErrorBrush"           Color="#FF5555" />
+    <SolidColorBrush x:Key="ThemeSuccessBrush"         Color="#50FA7B" />
+    <SolidColorBrush x:Key="ThemeNavBarBrush"          Color="#191A21" />
+    <SolidColorBrush x:Key="ThemeBorderBrush"          Color="#44475A" />
+    <SolidColorBrush x:Key="ThemeDataGridBgBrush"      Color="#1E1F29" />
+    <SolidColorBrush x:Key="ThemeDataGridSelBrush"     Color="#2D2E3F" />
+    <SolidColorBrush x:Key="ThemeNavButtonHoverBrush"  Color="#44475A" />
+    <Color x:Key="ThemeWindowColor"                    >#282A36</Color>
+</ResourceDictionary>

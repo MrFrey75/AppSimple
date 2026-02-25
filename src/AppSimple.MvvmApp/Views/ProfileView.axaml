@@ -19,7 +19,7 @@
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Email}" VerticalAlignment="Center" Margin="0,8,0,0" />
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Role"      Classes="label" VerticalAlignment="Center" Margin="0,8,0,0" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Role}" Foreground="#89B4FA" VerticalAlignment="Center" Margin="0,8,0,0" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Role}" Foreground="{DynamicResource ThemeAccentBrush}" VerticalAlignment="Center" Margin="0,8,0,0" />
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Member since" Classes="label" VerticalAlignment="Center" Margin="0,8,0,0" />
                     <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MemberSince}" Classes="subtitle" VerticalAlignment="Center" Margin="0,8,0,0" />

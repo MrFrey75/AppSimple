@@ -1,5 +1,7 @@
 using AppSimple.Core.Auth;
 using AppSimple.Core.Auth.Impl;
+using AppSimple.Core.Config;
+using AppSimple.Core.Config.Impl;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Logging.Impl;
@@ -28,6 +30,10 @@ public static class CoreServiceExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
+        // Config
+        services.AddSingleton<IAppConfigService>(_ =>
+            new AppConfigService(AppConfigPath.Resolve()));
+
         // Validators
         services.AddValidatorsFromAssemblyContaining<User>();
 

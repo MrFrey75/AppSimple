@@ -92,7 +92,7 @@ See [`docs/architecture.md`](docs/architecture.md) for a detailed breakdown.
             │                AppSimple.DataLib                      │
             │        SQLite · Dapper · UserRepository               │
             └───────────────────────────────────────────────────────┘
-```
+```cd $HOME/
 
 ## Prerequisites
 
@@ -117,6 +117,9 @@ $HOME/.dotnet/dotnet test    AppSimple.sln
 All runtime projects share the same SQLite database and log directory through two static helpers:
 
 | Helper | Namespace | Used for |
+    .AddDataLibServices(connectionString);      // SQLite connection + repositories
+```
+
 |---|---|---|
 | `DatabasePath.Resolve(configValue?)` | `AppSimple.DataLib.Db` | SQLite connection string |
 | `LogPath.Resolve(configValue?)` | `AppSimple.Core.Logging` | Log file directory |
@@ -272,7 +275,7 @@ Full source map: [`docs/webapi-structure.md`](docs/webapi-structure.md)
 ASP.NET Core 10 REST API. References Core + DataLib directly. Exposes JWT-secured endpoints consumed by `AppSimple.WebApp` and future HTTP clients.
 
 ```bash
-cd src/AppSimple.WebApi
+cd $HOME/Projects/AppSimple/src/AppSimple.WebApi
 $HOME/.dotnet/dotnet run
 # Listens on http://localhost:5157
 ```
@@ -297,7 +300,7 @@ Full source map: [`docs/usercli-structure.md`](docs/usercli-structure.md)
 End-user console application. No HTTP layer — references Core + DataLib directly.
 
 ```bash
-cd src/AppSimple.UserCLI
+cd $HOME/Projects/AppSimple/src/AppSimple.UserCLI
 $HOME/.dotnet/dotnet run
 ```
 
@@ -322,7 +325,7 @@ Cross-platform Avalonia UI desktop application (Windows · macOS · Linux).
 References Core + DataLib directly — no HTTP layer required.
 
 ```bash
-cd src/AppSimple.MvvmApp
+cd $HOME//Projects/AppSimple/src/AppSimple.MvvmApp
 $HOME/.dotnet/dotnet run
 ```
 
@@ -350,7 +353,10 @@ every API call.
 
 ```bash
 # Start WebApi first, then:
-cd src/AppSimple.WebApp
+cd $HOME/Projects/AppSimple/src/AppSimple.WebApi
+$HOME/.dotnet/dotnet run
+# In another terminal:
+cd $HOME/Projects/AppSimple/src/AppSimple.WebApp
 $HOME/.dotnet/dotnet run
 ```
 
@@ -376,7 +382,7 @@ Core or DataLib. Rejects logins from non-Admin users before establishing a sessi
 
 ```bash
 # Start WebApi first, then:
-cd src/AppSimple.AdminCli
+cd $HOME/Projects/AppSimple/src/AppSimple.AdminCli
 dotnet run
 ```
 
@@ -459,7 +465,7 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
 - [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
 - [x] `AppSimple.WebApp` — ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
-- [x] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
+- [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
 - [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp
 
 ## Contributing

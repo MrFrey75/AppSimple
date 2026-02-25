@@ -1,5 +1,7 @@
+using AppSimple.Core.Config;
 using AppSimple.Core.Enums;
 using AppSimple.Core.Services;
+using AppSimple.MvvmApp.Services;
 using AppSimple.MvvmApp.Session;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,6 +20,8 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly HomeViewModel   _homeVm;
     private readonly ProfileViewModel _profileVm;
     private readonly UsersViewModel  _usersVm;
+    private readonly ThemeManager    _themeManager;
+    private readonly IAppConfigService _configService;
 
     // ─── Observable state ──────────────────────────────────────────────────
 
@@ -35,6 +39,15 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>Gets or sets a value indicating whether a login operation is in progress.</summary>
     [ObservableProperty] private bool _isLoggingIn;
+
+    /// <summary>Gets or sets the index of the currently selected theme in ThemeManager.Themes.</summary>
+    [ObservableProperty] private int _selectedThemeIndex;
+
+    partial void OnSelectedThemeIndexChanged(int value)
+    {
+        if (value >= 0 && value < ThemeManager.Themes.Count)
+            _themeManager.SetTheme(ThemeManager.Themes[value]);
+    }
 
     // ─── Computed ──────────────────────────────────────────────────────────
 
@@ -58,7 +71,9 @@ public partial class MainWindowViewModel : ObservableObject
         UserSession session,
         HomeViewModel homeVm,
         ProfileViewModel profileVm,
-        UsersViewModel usersVm)
+        UsersViewModel usersVm,
+        ThemeManager themeManager,
+        IAppConfigService configService)
     {
         _auth      = auth;
         _users     = users;
@@ -66,7 +81,17 @@ public partial class MainWindowViewModel : ObservableObject
         _homeVm    = homeVm;
         _profileVm = profileVm;
         _usersVm   = usersVm;
+        _themeManager  = themeManager;
+        _configService = configService;
         _currentPage = homeVm;
+
+        var saved = _configService.GetSelectedTheme();
+        var savedIdx = -1;
+        for (var i = 0; i < ThemeManager.Themes.Count; i++)
+        {
+            if (ThemeManager.Themes[i] == saved) { savedIdx = i; break; }
+        }
+        _selectedThemeIndex = savedIdx >= 0 ? savedIdx : 0;
     }
 
     // ─── Navigation commands ───────────────────────────────────────────────

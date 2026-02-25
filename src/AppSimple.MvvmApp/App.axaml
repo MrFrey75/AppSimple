@@ -18,171 +18,148 @@
         </DataTemplate>
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Slot 0: active theme — swapped at runtime by ThemeManager -->
+                <ResourceInclude Source="avares://AppSimple.MvvmApp/Themes/CatppuccinMocha.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 
-        <!-- ── Window / Panel backgrounds ──────────────────────────── -->
         <Style Selector="Window">
-            <Setter Property="Background" Value="#1E1E2E" />
+            <Setter Property="Background" Value="{DynamicResource ThemeWindowBrush}" />
         </Style>
 
-        <!-- ── Typography ────────────────────────────────────────────── -->
         <Style Selector="TextBlock">
-            <Setter Property="Foreground"  Value="#CDD6F4" />
-            <Setter Property="FontFamily"  Value="Inter,Segoe UI,sans-serif" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="FontFamily" Value="Inter,Segoe UI,sans-serif" />
         </Style>
-
         <Style Selector="TextBlock.title">
             <Setter Property="FontSize"   Value="22" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#CDD6F4" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
         </Style>
-
         <Style Selector="TextBlock.subtitle">
             <Setter Property="FontSize"   Value="14" />
-            <Setter Property="Foreground" Value="#A6ADC8" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeSubtextBrush}" />
         </Style>
-
         <Style Selector="TextBlock.label">
             <Setter Property="FontSize"   Value="11" />
-            <Setter Property="Foreground" Value="#A6ADC8" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeSubtextBrush}" />
         </Style>
-
         <Style Selector="TextBlock.error">
-            <Setter Property="Foreground" Value="#F38BA8" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeErrorBrush}" />
             <Setter Property="FontSize"   Value="12" />
         </Style>
-
         <Style Selector="TextBlock.success">
-            <Setter Property="Foreground" Value="#A6E3A1" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeSuccessBrush}" />
             <Setter Property="FontSize"   Value="12" />
         </Style>
 
-        <!-- ── TextBox ──────────────────────────────────────────────── -->
         <Style Selector="TextBox">
-            <Setter Property="Background"        Value="#313244" />
-            <Setter Property="Foreground"        Value="#CDD6F4" />
-            <Setter Property="BorderBrush"       Value="#45475A" />
-            <Setter Property="BorderThickness"   Value="1" />
-            <Setter Property="CornerRadius"      Value="6" />
-            <Setter Property="Padding"           Value="8,6" />
-            <Setter Property="FontSize"          Value="13" />
-            <Setter Property="CaretBrush"        Value="#89B4FA" />
+            <Setter Property="Background"      Value="{DynamicResource ThemeOverlayBrush}" />
+            <Setter Property="Foreground"      Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="BorderBrush"     Value="{DynamicResource ThemeBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius"    Value="6" />
+            <Setter Property="Padding"         Value="8,6" />
+            <Setter Property="FontSize"        Value="13" />
+            <Setter Property="CaretBrush"      Value="{DynamicResource ThemeAccentBrush}" />
         </Style>
         <Style Selector="TextBox:focus">
-            <Setter Property="BorderBrush" Value="#89B4FA" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
         </Style>
 
-        <!-- ── Buttons ──────────────────────────────────────────────── -->
         <Style Selector="Button">
             <Setter Property="Cursor"          Value="Hand" />
             <Setter Property="CornerRadius"    Value="6" />
             <Setter Property="Padding"         Value="14,8" />
             <Setter Property="FontSize"        Value="13" />
             <Setter Property="FontWeight"      Value="Medium" />
-            <Setter Property="Foreground"      Value="#CDD6F4" />
-            <Setter Property="Background"      Value="#45475A" />
+            <Setter Property="Foreground"      Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="Background"      Value="{DynamicResource ThemeButtonBrush}" />
             <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style Selector="Button:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#585B70" />
+            <Setter Property="Background" Value="{DynamicResource ThemeButtonHoverBrush}" />
         </Style>
         <Style Selector="Button:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#313244" />
+            <Setter Property="Background" Value="{DynamicResource ThemeButtonPressedBrush}" />
         </Style>
 
-        <!-- primary -->
         <Style Selector="Button.primary">
-            <Setter Property="Background" Value="#89B4FA" />
-            <Setter Property="Foreground" Value="#1E1E2E" />
+            <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeWindowBrush}" />
         </Style>
         <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#B3C9FC" />
+            <Setter Property="Background" Value="{DynamicResource ThemeAccentHoverBrush}" />
         </Style>
 
-        <!-- danger -->
         <Style Selector="Button.danger">
-            <Setter Property="Background" Value="#F38BA8" />
-            <Setter Property="Foreground" Value="#1E1E2E" />
+            <Setter Property="Background" Value="{DynamicResource ThemeErrorBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeWindowBrush}" />
         </Style>
         <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#F7B8C8" />
+            <Setter Property="Background" Value="{DynamicResource ThemeErrorBrush}" />
         </Style>
 
-        <!-- success -->
         <Style Selector="Button.success">
-            <Setter Property="Background" Value="#A6E3A1" />
-            <Setter Property="Foreground" Value="#1E1E2E" />
+            <Setter Property="Background" Value="{DynamicResource ThemeSuccessBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeWindowBrush}" />
         </Style>
 
-        <!-- nav item button -->
         <Style Selector="Button.nav">
             <Setter Property="Background"    Value="Transparent" />
-            <Setter Property="Foreground"    Value="#CDD6F4" />
+            <Setter Property="Foreground"    Value="{DynamicResource ThemeTextBrush}" />
             <Setter Property="Padding"       Value="12,10" />
             <Setter Property="CornerRadius"  Value="8" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="FontSize"      Value="14" />
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#313244" />
+            <Setter Property="Background" Value="{DynamicResource ThemeNavButtonHoverBrush}" />
         </Style>
         <Style Selector="Button.nav.active /template/ ContentPresenter">
-            <Setter Property="Background" Value="#313244" />
+            <Setter Property="Background" Value="{DynamicResource ThemeNavButtonHoverBrush}" />
         </Style>
 
-        <!-- ── Card / panel ─────────────────────────────────────────── -->
         <Style Selector="Border.card">
-            <Setter Property="Background"      Value="#181825" />
+            <Setter Property="Background"      Value="{DynamicResource ThemeSurfaceBrush}" />
             <Setter Property="CornerRadius"    Value="10" />
             <Setter Property="Padding"         Value="20" />
-            <Setter Property="BorderBrush"     Value="#313244" />
+            <Setter Property="BorderBrush"     Value="{DynamicResource ThemeOverlayBrush}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
 
-        <!-- ── ComboBox ─────────────────────────────────────────────── -->
         <Style Selector="ComboBox">
-            <Setter Property="Background"      Value="#313244" />
-            <Setter Property="Foreground"      Value="#CDD6F4" />
-            <Setter Property="BorderBrush"     Value="#45475A" />
+            <Setter Property="Background"      Value="{DynamicResource ThemeOverlayBrush}" />
+            <Setter Property="Foreground"      Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="BorderBrush"     Value="{DynamicResource ThemeBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius"    Value="6" />
             <Setter Property="Padding"         Value="8,6" />
         </Style>
 
-        <!-- ── CheckBox ─────────────────────────────────────────────── -->
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="#CDD6F4" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
         </Style>
 
-        <!-- ── DataGrid ─────────────────────────────────────────────── -->
         <Style Selector="DataGrid">
-            <Setter Property="Background"            Value="#181825" />
-            <Setter Property="Foreground"            Value="#CDD6F4" />
-            <Setter Property="BorderBrush"           Value="#313244" />
-            <Setter Property="GridLinesVisibility"   Value="Horizontal" />
-            <Setter Property="HorizontalGridLinesBrush" Value="#313244" />
+            <Setter Property="Background"               Value="{DynamicResource ThemeDataGridBgBrush}" />
+            <Setter Property="Foreground"               Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="BorderBrush"              Value="{DynamicResource ThemeOverlayBrush}" />
+            <Setter Property="GridLinesVisibility"      Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeOverlayBrush}" />
         </Style>
         <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
-            <Setter Property="Fill"    Value="#2A2A3E" />
+            <Setter Property="Fill"    Value="{DynamicResource ThemeDataGridSelBrush}" />
             <Setter Property="Opacity" Value="1" />
         </Style>
     </Application.Styles>
-
-    <Application.Resources>
-        <ResourceDictionary>
-            <!-- accent palette -->
-            <Color x:Key="AccentColor">#89B4FA</Color>
-            <SolidColorBrush x:Key="AccentBrush"      Color="#89B4FA" />
-            <SolidColorBrush x:Key="SurfaceBrush"     Color="#181825" />
-            <SolidColorBrush x:Key="MantelBrush"      Color="#1E1E2E" />
-            <SolidColorBrush x:Key="OverlayBrush"     Color="#313244" />
-            <SolidColorBrush x:Key="SubtextBrush"     Color="#A6ADC8" />
-            <SolidColorBrush x:Key="TextBrush"        Color="#CDD6F4" />
-            <SolidColorBrush x:Key="ErrorBrush"       Color="#F38BA8" />
-            <SolidColorBrush x:Key="SuccessBrush"     Color="#A6E3A1" />
-        </ResourceDictionary>
-    </Application.Resources>
 
 </Application>

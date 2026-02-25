@@ -1,3 +1,4 @@
+using AppSimple.MvvmApp.Services;
 using AppSimple.MvvmApp.Session;
 using AppSimple.MvvmApp.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,8 @@ public static class MvvmAppServiceExtensions
     public static IServiceCollection AddMvvmAppServices(this IServiceCollection services)
     {
         services.AddSingleton<UserSession>();
+
+        services.AddSingleton<ThemeManager>();
 
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<ProfileViewModel>();

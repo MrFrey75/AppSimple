@@ -56,6 +56,10 @@ public partial class App : Application
         var _logger = _serviceProvider.GetRequiredService<IAppLogger<App>>();
         _logger.Information("Application initialized with connection string: {ConnectionString}", connectionString);
 
+        // Apply saved theme before creating the main window
+        var themeManager = _serviceProvider.GetRequiredService<AppSimple.MvvmApp.Services.ThemeManager>();
+        themeManager.ApplySavedTheme();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             desktop.MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 

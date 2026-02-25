@@ -19,7 +19,7 @@
                                HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding WelcomeText}"
                                HorizontalAlignment="Center"
-                               Foreground="#89B4FA"
+                               Foreground="{DynamicResource ThemeAccentBrush}"
                                FontSize="16" />
                 </StackPanel>
             </Border>

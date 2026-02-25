@@ -1,3 +1,4 @@
+using AppSimple.WebApp.Config;
 using AppSimple.WebApp.Services;
 using AppSimple.WebApp.Services.Impl;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -44,6 +45,10 @@ public static class WebAppServiceExtensions
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddHttpContextAccessor();
+
+        builder.Services.AddSingleton<AppConfigService>(_ =>
+            new AppConfigService(AppConfigPath.Resolve(builder.Configuration["AppConfig:Path"])));
+        builder.Services.AddSingleton<IThemeService, ThemeService>();
 
         return builder;
     }
