@@ -1,4 +1,5 @@
 using AppSimple.Core.Auth;
+using AppSimple.Core.Common.Exceptions;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
@@ -32,57 +33,56 @@ public sealed class AuthServiceTests
     };
 
     // -------------------------------------------------------------------------
-    // LoginAsync
+    // LoginAsync — failure cases
     // -------------------------------------------------------------------------
 
     [Fact]
-    public async Task LoginAsync_ReturnsFailure_WhenUserNotFound()
+    public async Task LoginAsync_ThrowsUnauthorized_WhenUserNotFound()
     {
         _repo.GetByUsernameAsync("nobody").ReturnsNull();
 
-        var result = await _svc.LoginAsync("nobody", "pass");
-
-        Assert.False(result.Succeeded);
-        Assert.Null(result.Token);
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _svc.LoginAsync("nobody", "pass"));
     }
 
     [Fact]
-    public async Task LoginAsync_ReturnsFailure_WhenUserInactive()
+    public async Task LoginAsync_ThrowsUnauthorized_WhenUserInactive()
     {
         var user = MakeUser(isActive: false);
         _repo.GetByUsernameAsync(user.Username).Returns(user);
 
-        var result = await _svc.LoginAsync(user.Username, "pass");
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _svc.LoginAsync(user.Username, "pass"));
 
-        Assert.False(result.Succeeded);
-        Assert.Contains("disabled", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("disabled", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task LoginAsync_ReturnsFailure_WhenPasswordInvalid()
+    public async Task LoginAsync_ThrowsUnauthorized_WhenPasswordInvalid()
     {
         var user = MakeUser();
         _repo.GetByUsernameAsync(user.Username).Returns(user);
         _hasher.Verify(Arg.Any<string>(), Arg.Any<string>()).Returns(false);
 
-        var result = await _svc.LoginAsync(user.Username, "wrongpass");
-
-        Assert.False(result.Succeeded);
-        Assert.Null(result.Token);
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _svc.LoginAsync(user.Username, "wrongpass"));
     }
 
+    // -------------------------------------------------------------------------
+    // LoginAsync — success cases
+    // -------------------------------------------------------------------------
+
     [Fact]
-    public async Task LoginAsync_ReturnsSuccess_WithToken_WhenCredentialsValid()
+    public async Task LoginAsync_ReturnsToken_WhenCredentialsValid()
     {
         var user = MakeUser();
         _repo.GetByUsernameAsync(user.Username).Returns(user);
         _hasher.Verify(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
         _jwt.GenerateToken(user).Returns("jwt.token.string");
 
-        var result = await _svc.LoginAsync(user.Username, "CorrectPass1");
+        var token = await _svc.LoginAsync(user.Username, "CorrectPass1");
 
-        Assert.True(result.Succeeded);
-        Assert.Equal("jwt.token.string", result.Token);
+        Assert.Equal("jwt.token.string", token);
     }
 
     [Fact]
@@ -103,7 +103,8 @@ public sealed class AuthServiceTests
     {
         _repo.GetByUsernameAsync(Arg.Any<string>()).ReturnsNull();
 
-        await _svc.LoginAsync("x", "y");
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _svc.LoginAsync("x", "y"));
 
         _jwt.DidNotReceive().GenerateToken(Arg.Any<User>());
     }

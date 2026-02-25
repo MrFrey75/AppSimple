@@ -1,7 +1,7 @@
 using AppSimple.Core.Interfaces;
-using AppSimple.Core.Services;
 using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Repositories;
+using AppSimple.DataLib.Services;
 using AppSimple.DataLib.Services.Impl;
 using Microsoft.Extensions.DependencyInjection;
 

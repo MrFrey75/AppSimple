@@ -1,4 +1,5 @@
 using AppSimple.Core.Auth;
+using AppSimple.Core.Common.Exceptions;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 
@@ -30,30 +31,30 @@ public sealed class AuthService : IAuthService
     }
 
     /// <inheritdoc />
-    public async Task<AuthResult> LoginAsync(string username, string plainPassword)
+    public async Task<string> LoginAsync(string username, string plainPassword)
     {
         var user = await _userRepository.GetByUsernameAsync(username);
         if (user is null)
         {
             _logger.Warning("Login failed — user '{Username}' not found.", username);
-            return AuthResult.Failure("Invalid username or password.");
+            throw new UnauthorizedException("Invalid username or password.");
         }
 
         if (!user.IsActive)
         {
             _logger.Warning("Login rejected — user '{Username}' is inactive.", username);
-            return AuthResult.Failure("Account is disabled. Please contact an administrator.");
+            throw new UnauthorizedException("Account is disabled. Please contact an administrator.");
         }
 
         if (!_passwordHasher.Verify(plainPassword, user.PasswordHash))
         {
             _logger.Warning("Login failed — invalid password for '{Username}'.", username);
-            return AuthResult.Failure("Invalid username or password.");
+            throw new UnauthorizedException("Invalid username or password.");
         }
 
         var token = _jwtTokenService.GenerateToken(user);
         _logger.Information("User '{Username}' authenticated successfully.", username);
-        return AuthResult.Success(token);
+        return token;
     }
 
     /// <inheritdoc />

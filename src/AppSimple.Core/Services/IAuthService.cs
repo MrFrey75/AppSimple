@@ -10,8 +10,11 @@ public interface IAuthService
     /// </summary>
     /// <param name="username">The username of the user attempting to log in.</param>
     /// <param name="plainPassword">The plain-text password to verify.</param>
-    /// <returns>An <see cref="AuthResult"/> containing the JWT token on success, or an error message on failure.</returns>
-    Task<AuthResult> LoginAsync(string username, string plainPassword);
+    /// <returns>The signed JWT token string on success.</returns>
+    /// <exception cref="AppSimple.Core.Common.Exceptions.UnauthorizedException">
+    /// Thrown when the credentials are invalid or the account is inactive.
+    /// </exception>
+    Task<string> LoginAsync(string username, string plainPassword);
 
     /// <summary>
     /// Validates a JWT token and returns the username encoded within it.

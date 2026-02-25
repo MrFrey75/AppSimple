@@ -3,6 +3,7 @@ using AppSimple.Core.Constants;
 using AppSimple.Core.Enums;
 using AppSimple.Core.Models;
 using AppSimple.Core.Services;
+using AppSimple.DataLib.Services;
 using AppSimple.UserCLI.Session;
 using AppSimple.UserCLI.UI;
 

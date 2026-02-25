@@ -4,6 +4,7 @@ using AppSimple.AdminCli.UI;
 using AppSimple.Core.Constants;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Services;
+using AppSimple.DataLib.Services;
 
 namespace AppSimple.AdminCli.Menus;
 

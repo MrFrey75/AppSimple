@@ -36,13 +36,8 @@ public sealed class AuthController : ControllerBase
     {
         _logger.Debug("Login attempt for '{Username}'", request.Username);
 
-        var result = await _auth.LoginAsync(request.Username, request.Password);
-
-        if (!result.Succeeded || result.Token is null)
-        {
-            _logger.Warning("Login failed for '{Username}': {Reason}", request.Username, result.Message);
-            return Unauthorized(new { error = result.Message });
-        }
+        // Throws UnauthorizedException on bad credentials — caught by ExceptionMiddleware → 401
+        var token = await _auth.LoginAsync(request.Username, request.Password);
 
         var user = await _users.GetByUsernameAsync(request.Username);
         if (user is null)
@@ -55,7 +50,7 @@ public sealed class AuthController : ControllerBase
 
         return Ok(new LoginResponse
         {
-            Token    = result.Token,
+            Token    = token,
             Username = user.Username,
             Role     = user.Role.ToString(),
         });

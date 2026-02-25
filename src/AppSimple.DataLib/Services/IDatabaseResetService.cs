@@ -1,4 +1,4 @@
-namespace AppSimple.Core.Services;
+namespace AppSimple.DataLib.Services;
 
 /// <summary>
 /// Defines the database reset and reseed operation.

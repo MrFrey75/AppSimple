@@ -1,3 +1,4 @@
+using AppSimple.Core.Common.Exceptions;
 using AppSimple.Core.Config;
 using AppSimple.Core.Enums;
 using AppSimple.Core.Services;
@@ -152,25 +153,23 @@ public partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var result = await _auth.LoginAsync(LoginUsername, LoginPassword);
-
-            if (result.Succeeded && result.Token is not null)
+            var token = await _auth.LoginAsync(LoginUsername, LoginPassword);
+            var user  = await _users.GetByUsernameAsync(LoginUsername);
+            if (user is not null)
             {
-                var user = await _users.GetByUsernameAsync(LoginUsername);
-                if (user is not null)
-                {
-                    _session.Login(user, result.Token);
-                    LoginUsername = string.Empty;
-                    LoginPassword = string.Empty;
-                    LoginError    = string.Empty;
-                    NotifySessionChanged();
-                    _homeVm.Refresh();
-                    NavigateToHomeCommand.Execute(null);
-                    return;
-                }
+                _session.Login(user, token);
+                LoginUsername = string.Empty;
+                LoginPassword = string.Empty;
+                LoginError    = string.Empty;
+                NotifySessionChanged();
+                _homeVm.Refresh();
+                NavigateToHomeCommand.Execute(null);
+                return;
             }
-
-            LoginError = result.Message;
+        }
+        catch (UnauthorizedException ex)
+        {
+            LoginError = ex.Message;
         }
         catch (Exception ex)
         {

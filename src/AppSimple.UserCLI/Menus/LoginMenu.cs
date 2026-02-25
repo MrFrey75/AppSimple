@@ -1,3 +1,4 @@
+using AppSimple.Core.Common.Exceptions;
 using AppSimple.Core.Services;
 using AppSimple.UserCLI.Session;
 using AppSimple.UserCLI.UI;
@@ -45,21 +46,23 @@ public class LoginMenu
             string password = ConsoleUI.ReadPassword("Password");
             ConsoleUI.WriteLine();
 
-            var result = await _auth.LoginAsync(username, password);
-
-            if (result.Succeeded && result.Token is not null)
+            try
             {
-                var user = await _users.GetByUsernameAsync(username);
+                var token = await _auth.LoginAsync(username, password);
+                var user  = await _users.GetByUsernameAsync(username);
                 if (user is not null)
                 {
-                    _session.Login(user, result.Token);
+                    _session.Login(user, token);
                     ConsoleUI.WriteSuccess($"Welcome back, {user.Username}!");
                     ConsoleUI.Pause();
                     return false;   // logged in — hand control to MainMenu
                 }
             }
+            catch (UnauthorizedException ex)
+            {
+                ConsoleUI.WriteError(ex.Message);
+            }
 
-            ConsoleUI.WriteError(result.Message);
             ConsoleUI.Pause();
         }
     }
