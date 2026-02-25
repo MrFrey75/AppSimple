@@ -1,8 +1,9 @@
+using AppSimple.Core.Logging;
+using AppSimple.Core.Models.Requests;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using AppSimple.Core.Logging;
 
 namespace AppSimple.AdminCli.Services.Impl;
 

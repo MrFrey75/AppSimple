@@ -1,3 +1,5 @@
+using AppSimple.Core.Enums;
+
 namespace AppSimple.Core.Models.Requests;
 
 /// <summary>
@@ -24,4 +26,10 @@ public sealed class UpdateUserRequest
 
     /// <summary>Gets or sets the updated avatar URL, or <c>null</c> to leave unchanged.</summary>
     public string? AvatarUrl { get; set; }
+
+    /// <summary>Gets or sets the role to assign. Admin-only field; <c>null</c> leaves unchanged.</summary>
+    public UserRole? Role { get; set; }
+
+    /// <summary>Gets or sets whether the account is active. Admin-only field; <c>null</c> leaves unchanged.</summary>
+    public bool? IsActive { get; set; }
 }

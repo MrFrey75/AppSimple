@@ -27,6 +27,7 @@ public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePas
 
         RuleFor(x => x.ConfirmNewPassword)
             .NotEmpty().WithMessage("Password confirmation is required.")
-            .Equal(x => x.NewPassword).WithMessage("Passwords do not match.");
+            .Equal(x => x.NewPassword).WithMessage("Passwords do not match.")
+            .When(x => x.ConfirmNewPassword is not null);
     }
 }

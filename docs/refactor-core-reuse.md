@@ -7,7 +7,7 @@ Analysis of duplicated code across AppSimple projects that could be moved to
 
 ## 🔴 High Priority — Duplicated Files That Should Not Exist
 
-### 1. `LogPath` — exists in Core but also copied in WebApp
+### 1. ✅ `LogPath` — exists in Core but also copied in WebApp (Completed)
 
 | Location | Status |
 |---|---|
@@ -18,7 +18,7 @@ Analysis of duplicated code across AppSimple projects that could be moved to
 
 ---
 
-### 2. `AppConfigPath` + `AppConfigService` — exists in Core but also copied in WebApp
+### 2. ✅ `AppConfigPath` + `AppConfigService` — exists in Core but also copied in WebApp (Completed)
 
 | Location | Status |
 |---|---|
@@ -124,8 +124,8 @@ Keep `.From()` as an extension or static method inside WebApi only.
 
 | Priority | Item | Files to Remove / Move |
 |---|---|---|
-| 🔴 | `LogPath` duplicate | Delete `WebApp/Extensions/LogPath.cs` |
-| 🔴 | `AppConfigPath`/`AppConfigService` duplicates | Delete 2 WebApp files |
+| ✅ | `LogPath` duplicate | Delete `WebApp/Extensions/LogPath.cs` |
+| ✅ | `AppConfigPath`/`AppConfigService` duplicates | Delete 2 WebApp files |
 | 🟠 | `UpdateUserRequest` merge | Remove 3 non-Core copies, merge fields into Core |
 | 🟠 | `CreateUserRequest` align | Remove `WebApi/DTOs` copy |
 | 🟠 | `ChangePasswordRequest` align | Remove `WebApi/DTOs` copy |

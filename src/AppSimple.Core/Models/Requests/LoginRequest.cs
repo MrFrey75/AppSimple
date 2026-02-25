@@ -1,6 +1,6 @@
-namespace AppSimple.WebApi.DTOs;
+namespace AppSimple.Core.Models.Requests;
 
-/// <summary>Request body for the login endpoint.</summary>
+/// <summary>Request model for authenticating a user.</summary>
 public sealed class LoginRequest
 {
     /// <summary>Gets or sets the username.</summary>

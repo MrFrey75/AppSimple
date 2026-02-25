@@ -1,3 +1,5 @@
+using AppSimple.Core.Models.Requests;
+
 namespace AppSimple.WebApp.Services;
 
 /// <summary>Abstraction for communicating with the AppSimple WebApi.</summary>
@@ -10,7 +12,7 @@ public interface IApiClient
     Task<UserDto?> GetMeAsync(string token);
 
     /// <summary>Updates the currently authenticated user's profile.</summary>
-    Task<UserDto?> UpdateMeAsync(string token, UpdateProfileRequest request);
+    Task<UserDto?> UpdateMeAsync(string token, UpdateUserRequest request);
 
     /// <summary>Changes the current user's password.</summary>
     Task<bool> ChangePasswordAsync(string token, string currentPassword, string newPassword);
@@ -25,7 +27,7 @@ public interface IApiClient
     Task<UserDto?> CreateUserAsync(string token, string username, string email, string password);
 
     /// <summary>Updates a specific user (Admin only).</summary>
-    Task<UserDto?> UpdateUserAsync(string token, Guid uid, UpdateProfileRequest request);
+    Task<UserDto?> UpdateUserAsync(string token, Guid uid, UpdateUserRequest request);
 
     /// <summary>Deletes a specific user (Admin only).</summary>
     Task<bool> DeleteUserAsync(string token, Guid uid);

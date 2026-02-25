@@ -1,3 +1,5 @@
+using AppSimple.Core.Enums;
+using AppSimple.Core.Models.Requests;
 using System.Security.Claims;
 using AppSimple.WebApp.Models;
 using AppSimple.WebApp.Services;
@@ -99,14 +101,14 @@ public sealed class AdminController : Controller
         var token = GetToken();
         if (token is null) return RedirectToAction("Login", "Auth");
 
-        var request = new UpdateProfileRequest
+        var request = new UpdateUserRequest
         {
             FirstName = model.FirstName,
             LastName = model.LastName,
             PhoneNumber = model.PhoneNumber,
             Bio = model.Bio,
             DateOfBirth = model.DateOfBirth,
-            Role = model.Role,
+            Role = (UserRole)model.Role,
             IsActive = model.IsActive
         };
 

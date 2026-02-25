@@ -12,6 +12,6 @@ public sealed class ChangePasswordRequest
     /// <summary>Gets or sets the new plain-text password.</summary>
     public required string NewPassword { get; set; }
 
-    /// <summary>Gets or sets the confirmation of the new password. Must match <see cref="NewPassword"/>.</summary>
-    public required string ConfirmNewPassword { get; set; }
+    /// <summary>Gets or sets the confirmation of the new password. Must match <see cref="NewPassword"/>. Optional for API callers.</summary>
+    public string? ConfirmNewPassword { get; set; }
 }

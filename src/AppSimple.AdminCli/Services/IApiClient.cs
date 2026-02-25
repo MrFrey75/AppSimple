@@ -1,3 +1,5 @@
+using AppSimple.Core.Models.Requests;
+
 namespace AppSimple.AdminCli.Services;
 
 /// <summary>Typed HTTP client for communicating with the AppSimple WebApi.</summary>

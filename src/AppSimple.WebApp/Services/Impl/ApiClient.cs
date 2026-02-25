@@ -1,3 +1,4 @@
+using AppSimple.Core.Models.Requests;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -56,7 +57,7 @@ public sealed class ApiClient : IApiClient
     }
 
     /// <inheritdoc/>
-    public async Task<UserDto?> UpdateMeAsync(string token, UpdateProfileRequest request)
+    public async Task<UserDto?> UpdateMeAsync(string token, UpdateUserRequest request)
     {
         SetBearer(_http, token);
         var response = await _http.PutAsync("/api/protected/me", ToJson(request));
@@ -103,7 +104,7 @@ public sealed class ApiClient : IApiClient
     }
 
     /// <inheritdoc/>
-    public async Task<UserDto?> UpdateUserAsync(string token, Guid uid, UpdateProfileRequest request)
+    public async Task<UserDto?> UpdateUserAsync(string token, Guid uid, UpdateUserRequest request)
     {
         SetBearer(_http, token);
         var response = await _http.PutAsync($"/api/admin/users/{uid}", ToJson(request));

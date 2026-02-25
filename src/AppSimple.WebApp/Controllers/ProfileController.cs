@@ -1,3 +1,4 @@
+using AppSimple.Core.Models.Requests;
 using System.Security.Claims;
 using AppSimple.WebApp.Models;
 using AppSimple.WebApp.Services;
@@ -86,7 +87,7 @@ public sealed class ProfileController : Controller
         var token = GetToken();
         if (token is null) return RedirectToAction("Login", "Auth");
 
-        var request = new UpdateProfileRequest
+        var request = new UpdateUserRequest
         {
             FirstName = model.FirstName,
             LastName = model.LastName,
