@@ -138,5 +138,5 @@ Host projects catch these in a global exception handler / middleware and map the
 
 - **Unit tests** (Core.Tests): all logic tested in isolation with NSubstitute mocks for dependencies. No I/O.
 - **Integration tests** (DataLib.Tests): real SQLite `:memory:` database — schema creation, seeding, and repository behaviour are tested end-to-end.
-- **Future (direct-reference projects)**: UserCLI and MvvmApp tests can reuse the same in-memory SQLite helpers from DataLib.Tests.
+- **Direct-reference clients** (UserCLI, MvvmApp): can reuse the in-memory SQLite helpers from DataLib.Tests for service-layer tests. UI tests use Console output capture (UserCLI) or Avalonia headless testing (MvvmApp).
 - **Future (HTTP projects)**: WebApi tests will use `WebApplicationFactory` for HTTP integration tests; AdminCli and WebApp tests will mock the HttpClient or use a test WebApi instance.

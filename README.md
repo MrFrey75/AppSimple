@@ -5,6 +5,7 @@ AppSimple is a .NET 10 starter solution demonstrating clean architecture, separa
 ## Table of Contents
 
 - [Project Structure](#project-structure)
+- [Built Projects](#built-projects)
 - [Future Projects](#future-projects)
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
@@ -12,6 +13,8 @@ AppSimple is a .NET 10 starter solution demonstrating clean architecture, separa
 - [DI Wiring (host project startup)](#di-wiring-host-project-startup)
 - [AppSimple.Core](#appsimplecore)
 - [AppSimple.DataLib](#appsimpledatalib)
+- [AppSimple.UserCLI](#appsimpleusercli)
+- [AppSimple.MvvmApp](#appsimplemvvmapp)
 - [Database schema](#database-schema)
 - [Testing](#testing)
 - [Tech Stack](#tech-stack)
@@ -30,26 +33,30 @@ AppSimple/
 │   ├── AppSimple.Core.Tests/      # Unit tests for Core (208 tests)
 │   ├── AppSimple.DataLib/         # SQLite/Dapper data access, implements Core interfaces
 │   ├── AppSimple.DataLib.Tests/   # Integration tests for DataLib (36 tests)
+│   ├── AppSimple.UserCLI/         # End-user console app — branch: UserCLI
+│   ├── AppSimple.MvvmApp/         # Cross-platform Avalonia UI desktop app — branch: MvvmApp
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md   # Code conventions for AI-assisted development
 └── README.md
 ```
 
+## Built Projects
+
+| Project | Branch | Connects via | Purpose |
+|---|---|---|---|
+| `AppSimple.Core` | `main` | — | Domain models, services, auth, logging, validators |
+| `AppSimple.DataLib` | `main` | Core (direct) | SQLite + Dapper data access |
+| `AppSimple.UserCLI` | `UserCLI` | Core + DataLib (direct) | End-user console app — role-aware menus, offline-capable |
+| `AppSimple.MvvmApp` | `MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
+
 ## Future Projects
 
 | Project | Connects via | Purpose |
 |---|---|---|
 | `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core Web API — REST endpoints |
-| `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — seed admin user, manage users via API |
-| `AppSimple.UserCLI` | Core + DataLib (direct) | End-user CLI — local access to Core services, no WebApi required — **branch: UserCLI** |
+| `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — manage users, seed data via API |
 | `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core MVC — user-facing GUI served from the browser |
-| `AppSimple.MvvmApp` | Core + DataLib (direct) | Avalonia UI cross-platform desktop app (Windows/macOS/Linux) — offline-capable, uses CommunityToolkit.Mvvm — **branch: MvvmApp** |
-| `AppSimple.WebApi.Tests` | — | Unit + integration tests for Web API |
-| `AppSimple.AdminCli.Tests` | — | Unit tests for Admin CLI |
-| `AppSimple.UserCLI.Tests` | — | Unit tests for User CLI |
-| `AppSimple.WebApp.Tests` | — | Unit + integration tests for Web App |
-| `AppSimple.MvvmApp.Tests` | — | Unit tests for MVVM application |
 
 ## Architecture
 
@@ -224,6 +231,56 @@ AddDataLibServices(connectionString)
 // Calls DapperConfig.Register(), registers IDbConnectionFactory, DbInitializer, IUserRepository
 ```
 
+## AppSimple.UserCLI
+
+Full source map: [`docs/usercli-structure.md`](docs/usercli-structure.md)
+
+End-user console application. No HTTP layer — references Core + DataLib directly.
+
+```bash
+cd src/AppSimple.UserCLI
+$HOME/.dotnet/dotnet run
+```
+
+**Default credentials:** `admin` / `Admin123!`
+
+### Features
+
+- Login screen with masked password input
+- Role-aware menu system:
+  - **All users:** Profile menu — view details, edit profile, change password
+  - **Admin role:** User management — list, create, edit, delete users
+- System users (`IsSystem = true`) are protected from modification
+- Pure `Console`/`ConsoleColor` UI — no third-party TUI libraries
+
+---
+
+## AppSimple.MvvmApp
+
+Full source map: [`docs/mvvmapp-structure.md`](docs/mvvmapp-structure.md)
+
+Cross-platform Avalonia UI desktop application (Windows · macOS · Linux).
+References Core + DataLib directly — no HTTP layer required.
+
+```bash
+cd src/AppSimple.MvvmApp
+$HOME/.dotnet/dotnet run
+```
+
+**Default credentials:** `admin` / `Admin123!`
+
+### Features
+
+- Public landing page on startup
+- Top navigation bar with login form (username + masked password)
+- Left sidebar nav — items change based on logged-in role/permissions
+- **Profile page** — view read-only info, edit profile fields, change password
+- **Users page** (Admin only) — DataGrid + inline create/edit form panel
+- Dark theme — Fluent Design + Catppuccin colour palette
+- Full MVVM — `[ObservableProperty]` + `[RelayCommand]` (CommunityToolkit.Mvvm), no code-behind password handling
+
+---
+
 ## Database schema
 
 ```sql
@@ -283,11 +340,16 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 
 ## Roadmap
 
-- [ ] `AppSimple.WebApi` — REST API consuming Core services directly
-- [ ] `AppSimple.AdminCli` — Admin CLI connecting to Core services via the WebApi HTTP layer
-- [ ] `AppSimple.UserCLI` — End-user CLI referencing Core + DataLib directly — **branch: UserCLI**
-- [ ] `AppSimple.WebApp` — MVC front-end connecting to Core services via the WebApi HTTP layer
-- [ ] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop application (Windows/macOS/Linux) referencing Core + DataLib directly — **branch: MvvmApp**
+- [x] `AppSimple.Core` — domain models, services, auth, logging, validators
+- [x] `AppSimple.DataLib` — SQLite + Dapper data access
+- [x] `AppSimple.Core.Tests` — 208 unit tests
+- [x] `AppSimple.DataLib.Tests` — 36 integration tests
+- [x] `AppSimple.UserCLI` — end-user console app (direct Core + DataLib) — **branch: UserCLI**
+- [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
+- [ ] `AppSimple.WebApi` — ASP.NET Core Web API exposing Core services over HTTP
+- [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
+- [ ] `AppSimple.WebApp` — ASP.NET Core MVC front-end connecting via WebApi HTTP
+- [ ] Test projects for WebApi, AdminCli, UserCLI, WebApp, MvvmApp
 
 ## Contributing
 

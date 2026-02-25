@@ -4,6 +4,13 @@ Complete wiring example for a **direct-reference** host project — one that ref
 
 > **HTTP clients** (AdminCli, WebApp) connect via the WebApi REST layer and do not register Core or DataLib services. They only need an `HttpClient` pointed at the WebApi base address.
 
+## Real-world examples
+
+| Project | DI registration file | Notes |
+|---|---|---|
+| `AppSimple.UserCLI` | `Program.cs` | File-only logging (`EnableConsole = false`) to avoid mixing log output with interactive UI |
+| `AppSimple.MvvmApp` | `App.axaml.cs` via `AddMvvmAppServices()` | Also registers ViewModels and `MainWindow` as singletons/transients |
+
 ## Package references
 
 Add these to your host project's `.csproj`:
