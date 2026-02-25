@@ -1,0 +1,142 @@
+# Architecture
+
+AppSimple follows a layered clean architecture where dependencies only point inward — from infrastructure toward the domain.
+
+## Layer overview
+
+AppSimple has two distinct integration tiers for host projects: those that reference Core and DataLib **directly** (local/offline capable), and those that connect through `AppSimple.WebApi` over **HTTP**.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│               HTTP Clients (connect via WebApi)                  │
+│  AdminCli · WebApp                                               │
+│  - REST calls to WebApi endpoints                                │
+│  - No direct reference to Core or DataLib                        │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │ HTTP / REST
+┌───────────────────────────────▼──────────────────────────────────┐
+│                       AppSimple.WebApi                           │
+│  ASP.NET Core Web API — exposes Core services over HTTP          │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │
+                                │ (same direct-reference tier below)
+                                │
+┌───────────────────────────────▼──────────────────────────────────┐
+│          Direct-Reference Clients (no HTTP layer)                │
+│  WebApi · UserCLI · MvvmApp                                      │
+│  - Project-reference AppSimple.Core + AppSimple.DataLib          │
+│  - Full local / offline capability                               │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │ depends on
+┌───────────────────────────────▼──────────────────────────────────┐
+│                       AppSimple.Core                             │
+│  Domain Layer — owns business rules                              │
+│                                                                  │
+│  Models/          BaseEntity, User                               │
+│  Enums/           UserRole, Permission                           │
+│  Constants/       AppConstants                                   │
+│  Interfaces/      IRepository<T>, IUserRepository                │
+│  Services/        IUserService, IAuthService + impls             │
+│  Auth/            IPasswordHasher, IJwtTokenService              │
+│  Common/          Result<T>, typed exceptions                    │
+│  Logging/         IAppLogger<T> abstraction                      │
+│  Validators/      FluentValidation validators                    │
+└───────────────────────────────┬──────────────────────────────────┘
+                                │ implements interfaces from
+┌───────────────────────────────▼──────────────────────────────────┐
+│                     AppSimple.DataLib                            │
+│  Infrastructure Layer — SQLite + Dapper                          │
+│                                                                  │
+│  Db/              Connection factory, DbInitializer              │
+│  Repositories/    UserRepository : IUserRepository               │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+## Project catalogue
+
+| Project | Type | Connects via | Purpose |
+|---|---|---|---|
+| `AppSimple.Core` | Class library | — | Domain models, services, auth, logging, validators |
+| `AppSimple.DataLib` | Class library | Core (direct) | SQLite + Dapper data access |
+| `AppSimple.WebApi` | ASP.NET Core Web API | Core + DataLib (direct) | REST API host — exposes Core services over HTTP |
+| `AppSimple.AdminCli` | Console application | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
+| `AppSimple.UserCLI` | Console application | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
+| `AppSimple.WebApp` | ASP.NET Core MVC | WebApi (HTTP) | Browser-based user GUI |
+| `AppSimple.MvvmApp` | WPF application | Core + DataLib (direct) | Offline-capable desktop app using CommunityToolkit.Mvvm |
+
+## Dependency rules
+
+| From | May depend on | May NOT depend on |
+|---|---|---|
+| WebApi | Core, DataLib | AdminCli, WebApp, UserCLI, MvvmApp |
+| AdminCli | WebApi (HTTP) | Core, DataLib directly |
+| WebApp | WebApi (HTTP) | Core, DataLib directly |
+| UserCLI | Core, DataLib | WebApi |
+| MvvmApp | Core, DataLib | WebApi |
+| DataLib | Core | All host projects |
+| Core | (no project refs) | All other projects |
+
+Core is intentionally free of infrastructure concerns — it knows nothing about SQLite, HTTP, or file I/O.
+
+## DI composition
+
+**Direct-reference projects** (WebApi, UserCLI, MvvmApp) wire Core and DataLib themselves:
+
+```csharp
+services
+    .AddAppLogging(opts => { ... })       // Core — Serilog + IAppLogger<>
+    .AddCoreServices()                     // Core — validators, auth services, user services
+    .AddJwtAuthentication(opts => { ... }) // Core — IJwtTokenService + JwtOptions
+    .AddDataLibServices("Data Source=app.db"); // DataLib — DB connection + repositories
+```
+
+**HTTP clients** (AdminCli, WebApp) only need an `HttpClient` configured to call the WebApi — they have no direct service registrations from Core or DataLib.
+
+## Authentication flow
+
+```
+Client
+  │  POST /auth/login { username, password }
+  │
+  ▼
+AuthService.LoginAsync(username, password)
+  │  1. IUserRepository.GetByUsernameAsync(username)
+  │  2. Check IsActive
+  │  3. IPasswordHasher.Verify(password, user.PasswordHash)
+  │  4. IJwtTokenService.GenerateToken(user)
+  │
+  ▼
+AuthResult.Success(jwtToken)   ──►  client stores token
+```
+
+Subsequent requests carry the `Authorization: Bearer <token>` header. The host project validates it via `IAuthService.ValidateToken(token)` (delegates to `IJwtTokenService.GetUsernameFromToken`).
+
+## Data access pattern
+
+```
+IUserService (Core interface)
+    └── UserService (Core impl)
+            └── IUserRepository (Core interface)
+                    └── UserRepository (DataLib impl, Dapper + SQLite)
+```
+
+All repositories are scoped to the DI request lifetime. The connection factory is a singleton that creates a new open connection per call.
+
+## Error handling strategy
+
+| Scenario | Exception | Suggested HTTP status |
+|---|---|---|
+| Entity not found | `EntityNotFoundException` | 404 Not Found |
+| Duplicate username / email | `DuplicateEntityException` | 409 Conflict |
+| Modify system entity | `SystemEntityException` | 403 Forbidden |
+| Bad credentials / wrong password | `UnauthorizedException` | 401 Unauthorized |
+| Validation failure | `ValidationException` (FluentValidation) | 422 Unprocessable Entity |
+
+Host projects catch these in a global exception handler / middleware and map them to structured API responses.
+
+## Testing strategy
+
+- **Unit tests** (Core.Tests): all logic tested in isolation with NSubstitute mocks for dependencies. No I/O.
+- **Integration tests** (DataLib.Tests): real SQLite `:memory:` database — schema creation, seeding, and repository behaviour are tested end-to-end.
+- **Future (direct-reference projects)**: UserCLI and MvvmApp tests can reuse the same in-memory SQLite helpers from DataLib.Tests.
+- **Future (HTTP projects)**: WebApi tests will use `WebApplicationFactory` for HTTP integration tests; AdminCli and WebApp tests will mock the HttpClient or use a test WebApi instance.

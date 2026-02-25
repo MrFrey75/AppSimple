@@ -1,0 +1,108 @@
+using AppSimple.Core.Constants;
+using AppSimple.Core.Enums;
+using AppSimple.Core.Models;
+using Dapper;
+using Serilog;
+
+namespace AppSimple.DataLib.Db;
+
+/// <summary>
+/// Handles SQLite schema creation and optional seeding of system data.
+/// </summary>
+public sealed class DbInitializer
+{
+    private readonly IDbConnectionFactory _connectionFactory;
+    private readonly ILogger _logger = Log.ForContext<DbInitializer>();
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="DbInitializer"/>.
+    /// </summary>
+    /// <param name="connectionFactory">The factory used to open database connections.</param>
+    public DbInitializer(IDbConnectionFactory connectionFactory)
+    {
+        _connectionFactory = connectionFactory;
+    }
+
+    /// <summary>
+    /// Creates the database schema if it does not already exist.
+    /// </summary>
+    public void Initialize()
+    {
+        _logger.Information("Initializing database schema...");
+
+        using var connection = _connectionFactory.CreateConnection();
+
+        connection.Execute("""
+            CREATE TABLE IF NOT EXISTS Users (
+                Uid          TEXT NOT NULL PRIMARY KEY,
+                Username     TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                PasswordHash TEXT NOT NULL,
+                Email        TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                FirstName    TEXT,
+                LastName     TEXT,
+                PhoneNumber  TEXT,
+                DateOfBirth  TEXT,
+                Bio          TEXT,
+                AvatarUrl    TEXT,
+                Role         INTEGER NOT NULL DEFAULT 0,
+                IsActive     INTEGER NOT NULL DEFAULT 1,
+                IsSystem     INTEGER NOT NULL DEFAULT 0,
+                CreatedAt    TEXT NOT NULL,
+                UpdatedAt    TEXT NOT NULL
+            );
+            """);
+
+        _logger.Information("Database schema initialized.");
+    }
+
+    /// <summary>
+    /// Seeds the default admin user if no admin user exists.
+    /// </summary>
+    /// <param name="adminPasswordHash">The BCrypt-hashed password for the admin user.</param>
+    public void SeedAdminUser(string adminPasswordHash)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+
+        var exists = connection.ExecuteScalar<int>(
+            "SELECT COUNT(1) FROM Users WHERE Role = @Role",
+            new { Role = (int)UserRole.Admin }) > 0;
+
+        if (exists)
+        {
+            _logger.Debug("Admin user already exists. Skipping seed.");
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var admin = new User
+        {
+            Uid = Guid.CreateVersion7(),
+            Username = AppConstants.DefaultAdminUsername,
+            PasswordHash = adminPasswordHash,
+            Email = "admin@appsimple.local",
+            Role = UserRole.Admin,
+            IsActive = true,
+            IsSystem = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        connection.Execute("""
+            INSERT INTO Users (Uid, Username, PasswordHash, Email, Role, IsActive, IsSystem, CreatedAt, UpdatedAt)
+            VALUES (@Uid, @Username, @PasswordHash, @Email, @Role, @IsActive, @IsSystem, @CreatedAt, @UpdatedAt)
+            """, new
+        {
+            Uid = admin.Uid.ToString(),
+            admin.Username,
+            admin.PasswordHash,
+            admin.Email,
+            Role = (int)admin.Role,
+            IsActive = admin.IsActive ? 1 : 0,
+            IsSystem = admin.IsSystem ? 1 : 0,
+            CreatedAt = admin.CreatedAt.ToString("O"),
+            UpdatedAt = admin.UpdatedAt.ToString("O")
+        });
+
+        _logger.Information("Default admin user seeded.");
+    }
+}
