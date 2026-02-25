@@ -1,3 +1,4 @@
+using AppSimple.Core.Logging;
 using AppSimple.WebApp.Config;
 using AppSimple.WebApp.Services;
 using AppSimple.WebApp.Services.Impl;
