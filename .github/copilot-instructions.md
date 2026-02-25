@@ -13,7 +13,6 @@ AppSimple/
 │   ├── AppSimple.UserCLI/          # End-user console app — connects directly to Core + DataLib
 │   ├── AppSimple.MvvmApp/          # Cross-platform Avalonia UI desktop app — connects directly to Core + DataLib
 │   ├── AppSimple.AdminCli/         # Future: Admin CLI for user management and seeding via WebApi HTTP
-│   ├── AppSimple.MobileApp/        # Future: Cross-platform mobile app using MAUI via WebApi HTTP
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md     # Instructions for code generation and conventions

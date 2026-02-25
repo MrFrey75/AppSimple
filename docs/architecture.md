@@ -63,7 +63,6 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 | `AppSimple.UserCLI` | Console application | ✅ Built | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
 | `AppSimple.MvvmApp` | Avalonia UI application | ✅ Built | Core + DataLib (direct) | Cross-platform desktop app (Windows/macOS/Linux) |
 | `AppSimple.AdminCli` | Console application | ✅ Built | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
-| `AppSimple.MobileApp` | MAUI application | 🔜 Planned | WebApi (HTTP) | Cross-platform mobile app |
 
 ## Dependency rules
 

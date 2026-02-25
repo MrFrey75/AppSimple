@@ -62,9 +62,7 @@ AppSimple/
 
 ## Future Projects
 
-| Project | Connects via | Purpose |
-|---|---|---|
-| `AppSimple.MobileApp` | WebApi (HTTP) | Cross-platform mobile app using MAUI |
+No future projects planned at this time.
 
 ## Architecture
 
@@ -461,8 +459,7 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
 - [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
 - [x] `AppSimple.WebApp` — ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
-- [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
-- [ ] `AppSimple.MobileApp` — cross-platform mobile app (MAUI) connecting via WebApi HTTP
+- [x] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
 - [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp
 
 ## Contributing
