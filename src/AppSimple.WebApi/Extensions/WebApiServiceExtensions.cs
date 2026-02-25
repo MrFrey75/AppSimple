@@ -1,5 +1,6 @@
 using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
+using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,7 @@ public static class WebApiServiceExtensions
     public static WebApplicationBuilder AddWebApiServices(this WebApplicationBuilder builder)
     {
         var config           = builder.Configuration;
-        var connectionString = config["Database:ConnectionString"] ?? "Data Source=appsimple.db";
+        var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
 
         // Core + DataLib
         builder.Services.AddAppLogging(opts =>

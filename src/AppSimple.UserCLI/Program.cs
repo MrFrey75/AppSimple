@@ -36,7 +36,7 @@ services.AddJwtAuthentication(opts =>
 
 // Data access — SQLite + Dapper repositories
 services.AddDataLibServices(
-    configuration["Database:ConnectionString"] ?? "Data Source=appsimple.db");
+    DatabasePath.Resolve(configuration["Database:ConnectionString"]));
 
 // CLI-specific services
 services.AddSingleton<UserSession>();

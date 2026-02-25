@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AppSimple.Core.Auth;
 using AppSimple.Core.Extensions;
+using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using AppSimple.MvvmApp.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +26,7 @@ public partial class App : Application
             .AddJsonFile("appsettings.json", optional: true)
             .Build();
 
-        var connectionString = config["Database:ConnectionString"] ?? "Data Source=appsimple.db";
+        var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
 
         var services = new ServiceCollection();
         services.AddAppLogging(opts =>
@@ -44,9 +45,6 @@ public partial class App : Application
         services.AddDataLibServices(connectionString);
         services.AddMvvmAppServices();
         _serviceProvider = services.BuildServiceProvider();
-
-        _logger = _serviceProvider.GetRequiredService<IAppLogger<App>>();
-        _logger.Information("Application started.");
 
         // Ensure DB schema + admin seed
         var initializer = _serviceProvider.GetRequiredService<AppSimple.DataLib.Db.DbInitializer>();
