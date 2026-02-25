@@ -1,4 +1,5 @@
 using AppSimple.Core.Enums;
+using AppSimple.Core.Logging;
 using AppSimple.Core.Services;
 using AppSimple.WebApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,13 @@ namespace AppSimple.WebApi.Controllers;
 public sealed class AdminController : ControllerBase
 {
     private readonly IUserService _users;
+    private readonly IAppLogger<AdminController> _logger;
 
     /// <summary>Initializes a new instance of <see cref="AdminController"/>.</summary>
-    public AdminController(IUserService users)
+    public AdminController(IUserService users, IAppLogger<AdminController> logger)
     {
-        _users = users;
+        _users  = users;
+        _logger = logger;
     }
 
     /// <summary>Returns a message confirming the caller has admin access.</summary>
@@ -35,6 +38,7 @@ public sealed class AdminController : ControllerBase
     public async Task<IActionResult> GetAllUsers()
     {
         var users = await _users.GetAllAsync();
+        _logger.Debug("Admin '{Admin}' retrieved all users ({Count} records)", User.Identity?.Name, users.Count());
         return Ok(users.Select(UserDto.From));
     }
 
@@ -55,6 +59,7 @@ public sealed class AdminController : ControllerBase
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
         var user = await _users.CreateAsync(request.Username, request.Email, request.Password);
+        _logger.Information("Admin '{Admin}' created user '{Username}' ({Uid})", User.Identity?.Name, user.Username, user.Uid);
         return CreatedAtAction(nameof(GetUser), new { uid = user.Uid }, UserDto.From(user));
     }
 
@@ -76,6 +81,7 @@ public sealed class AdminController : ControllerBase
         if (request.IsActive    is not null) user.IsActive    = request.IsActive.Value;
 
         await _users.UpdateAsync(user);
+        _logger.Information("Admin '{Admin}' updated user '{Username}' ({Uid})", User.Identity?.Name, user.Username, uid);
         return Ok(UserDto.From((await _users.GetByUidAsync(uid))!));
     }
 
@@ -87,6 +93,7 @@ public sealed class AdminController : ControllerBase
     public async Task<IActionResult> DeleteUser(Guid uid)
     {
         await _users.DeleteAsync(uid);
+        _logger.Information("Admin '{Admin}' deleted user ({Uid})", User.Identity?.Name, uid);
         return NoContent();
     }
 
@@ -101,6 +108,7 @@ public sealed class AdminController : ControllerBase
 
         user.Role = role;
         await _users.UpdateAsync(user);
+        _logger.Information("Admin '{Admin}' set role of user ({Uid}) to {Role}", User.Identity?.Name, uid, role);
         return NoContent();
     }
 }

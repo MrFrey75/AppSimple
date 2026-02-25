@@ -1,3 +1,4 @@
+using AppSimple.Core.Logging;
 using AppSimple.Core.Services;
 using AppSimple.WebApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,14 @@ public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService  _auth;
     private readonly IUserService  _users;
+    private readonly IAppLogger<AuthController> _logger;
 
     /// <summary>Initializes a new instance of <see cref="AuthController"/>.</summary>
-    public AuthController(IAuthService auth, IUserService users)
+    public AuthController(IAuthService auth, IUserService users, IAppLogger<AuthController> logger)
     {
-        _auth  = auth;
-        _users = users;
+        _auth   = auth;
+        _users  = users;
+        _logger = logger;
     }
 
     /// <summary>
@@ -30,14 +33,24 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        _logger.Debug("Login attempt for '{Username}'", request.Username);
+
         var result = await _auth.LoginAsync(request.Username, request.Password);
 
         if (!result.Succeeded || result.Token is null)
+        {
+            _logger.Warning("Login failed for '{Username}': {Reason}", request.Username, result.Message);
             return Unauthorized(new { error = result.Message });
+        }
 
         var user = await _users.GetByUsernameAsync(request.Username);
         if (user is null)
+        {
+            _logger.Warning("Login succeeded but user '{Username}' not found in database", request.Username);
             return Unauthorized(new { error = "User not found." });
+        }
+
+        _logger.Information("User '{Username}' (Role: {Role}) logged in", user.Username, user.Role);
 
         return Ok(new LoginResponse
         {
@@ -58,8 +71,12 @@ public sealed class AuthController : ControllerBase
     {
         var username = _auth.ValidateToken(token);
         if (username is null)
+        {
+            _logger.Debug("Token validation failed");
             return BadRequest(new { error = "Token is invalid or expired." });
+        }
 
+        _logger.Debug("Token validated for '{Username}'", username);
         return Ok(new { username, valid = true });
     }
 }

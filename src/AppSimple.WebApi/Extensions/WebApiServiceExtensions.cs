@@ -5,6 +5,7 @@ using AppSimple.DataLib.Db;
 using AppSimple.DataLib.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
 namespace AppSimple.WebApi.Extensions;
@@ -28,6 +29,9 @@ public static class WebApiServiceExtensions
             opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
             opts.LogDirectory = LogPath.Resolve(config["AppLogging:LogDirectory"]);
         });
+
+        // Wire Serilog into ASP.NET Core's ILogger<T> pipeline (e.g. ExceptionMiddleware)
+        builder.Host.UseSerilog();
         builder.Services.AddCoreServices();
         builder.Services.AddJwtAuthentication(opts =>
         {

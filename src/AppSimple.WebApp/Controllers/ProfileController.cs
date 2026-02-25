@@ -98,10 +98,12 @@ public sealed class ProfileController : Controller
         var result = await _api.UpdateMeAsync(token, request);
         if (result is null)
         {
+            _logger.LogWarning("Profile update failed for '{Username}'", User.Identity?.Name);
             TempData["Error"] = "Failed to update profile.";
             return View(model);
         }
 
+        _logger.LogInformation("User '{Username}' updated their profile", User.Identity?.Name);
         TempData["Success"] = "Profile updated successfully.";
         return RedirectToAction("Index");
     }
@@ -123,10 +125,12 @@ public sealed class ProfileController : Controller
         var success = await _api.ChangePasswordAsync(token, model.CurrentPassword, model.NewPassword);
         if (!success)
         {
+            _logger.LogWarning("Password change failed for '{Username}'", User.Identity?.Name);
             model.Error = "Failed to change password. Check your current password and try again.";
             return View(model);
         }
 
+        _logger.LogInformation("User '{Username}' changed their password", User.Identity?.Name);
         TempData["Success"] = "Password changed successfully.";
         return RedirectToAction("Index");
     }

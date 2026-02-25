@@ -51,10 +51,12 @@ public sealed class AdminController : Controller
         var result = await _api.CreateUserAsync(token, model.Username, model.Email, model.Password);
         if (result is null)
         {
+            _logger.LogWarning("Admin '{Admin}' failed to create user '{Username}'", User.Identity?.Name, model.Username);
             model.Error = "Failed to create user. The username or email may already be taken.";
             return View(model);
         }
 
+        _logger.LogInformation("Admin '{Admin}' created user '{Username}'", User.Identity?.Name, result.Username);
         TempData["Success"] = $"User '{result.Username}' created successfully.";
         return RedirectToAction("Index");
     }
@@ -111,10 +113,12 @@ public sealed class AdminController : Controller
         var result = await _api.UpdateUserAsync(token, uid, request);
         if (result is null)
         {
+            _logger.LogWarning("Admin '{Admin}' failed to update user ({Uid})", User.Identity?.Name, uid);
             model.Error = "Failed to update user.";
             return View(model);
         }
 
+        _logger.LogInformation("Admin '{Admin}' updated user '{Username}' ({Uid})", User.Identity?.Name, result.Username, uid);
         TempData["Success"] = $"User '{result.Username}' updated successfully.";
         return RedirectToAction("Index");
     }
@@ -128,6 +132,11 @@ public sealed class AdminController : Controller
         if (token is null) return RedirectToAction("Login", "Auth");
 
         var success = await _api.DeleteUserAsync(token, uid);
+        if (success)
+            _logger.LogInformation("Admin '{Admin}' deleted user ({Uid})", User.Identity?.Name, uid);
+        else
+            _logger.LogWarning("Admin '{Admin}' failed to delete user ({Uid})", User.Identity?.Name, uid);
+
         TempData[success ? "Success" : "Error"] = success
             ? "User deleted successfully."
             : "Failed to delete user.";
