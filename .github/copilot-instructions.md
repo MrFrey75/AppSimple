@@ -56,7 +56,10 @@ AppSimple/
 
 ### Nullable Reference Types & Safety
 * **Nullable Enabled**: Project-wide `<Nullable>enable</Nullable>` is mandatory.
-* **Explicit Handling**: Always handle null cases or use nullable annotations (`?`).
+* **Explicit Handling**: Always handle nul
+* **PascalCase**: Use for class names, method names, and properties.
+* **camelCase**: Use for local variables and method parameters.
+* **File-Scoped Namespaces**: Use `namespal cases or use nullable annotations (`?`).
 * **Implicit Usings**: Enabled project-wide to remove boilerplate `using` statements.
 
 ### Technical Integrations (Free & Open Source)

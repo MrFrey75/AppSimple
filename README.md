@@ -2,9 +2,27 @@
 
 AppSimple is a .NET 10 starter solution demonstrating clean architecture, separation of concerns, and testability. It provides a fully-implemented core business layer and SQLite data access layer, ready to be consumed by future host projects.
 
+## Table of Contents
+
+- [Project Structure](#project-structure)
+- [Future Projects](#future-projects)
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [DI Wiring (host project startup)](#di-wiring-host-project-startup)
+- [AppSimple.Core](#appsimplecore)
+- [AppSimple.DataLib](#appsimpledatalib)
+- [Database schema](#database-schema)
+- [Testing](#testing)
+- [Tech Stack](#tech-stack)
+- [Security notes](#security-notes)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Project Structure
 
-```
+```text
 AppSimple/
 ├── docs/                          # Architecture, design decisions, and diagrams
 ├── src/
@@ -18,7 +36,7 @@ AppSimple/
 └── README.md
 ```
 
-### Future projects
+## Future Projects
 
 | Project | Connects via | Purpose |
 |---|---|---|
@@ -37,7 +55,7 @@ AppSimple/
 
 See [`docs/architecture.md`](docs/architecture.md) for a detailed breakdown.
 
-```
+```text
                   ┌────────────────────────────────────────────────────────────────┐
                   │              Projects that connect via HTTP                    │
                   │          AdminCli (HTTP) · WebApp (HTTP)                       │
