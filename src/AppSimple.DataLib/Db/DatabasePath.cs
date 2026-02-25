@@ -42,7 +42,7 @@ public static class DatabasePath
 
         var defaultPath = Path.Combine(folder, DbFile);
 
-        return defaultPath;
+        return $"Data Source={defaultPath}";
     }
 
     /// <summary>Gets the resolved absolute path to the database file.</summary>
