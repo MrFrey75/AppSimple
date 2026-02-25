@@ -36,6 +36,7 @@ AppSimple/
 │   ├── AppSimple.UserCLI/         # End-user console app (direct Core + DataLib)
 │   ├── AppSimple.MvvmApp/         # Cross-platform Avalonia UI desktop app
 │   ├── AppSimple.WebApi/          # ASP.NET Core 10 REST API with JWT auth
+│   ├── AppSimple.WebApp/          # ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md   # Code conventions for AI-assisted development
@@ -51,13 +52,14 @@ AppSimple/
 | `AppSimple.UserCLI` | Core + DataLib (direct) | End-user console app — role-aware menus, offline-capable |
 | `AppSimple.MvvmApp` | Core + DataLib (direct) | Cross-platform Avalonia UI desktop app (Windows/macOS/Linux) |
 | `AppSimple.WebApi` | Core + DataLib (direct) | ASP.NET Core 10 REST API — JWT auth, role-based access |
+| `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core 10 MVC web front-end — dark theme, cookie session |
 
 ## Future Projects
 
 | Project | Connects via | Purpose |
 |---|---|---|
 | `AppSimple.AdminCli` | WebApi (HTTP) | Admin CLI — manage users, seed data via API |
-| `AppSimple.WebApp` | WebApi (HTTP) | ASP.NET Core MVC — user-facing GUI served from the browser |
+| `AppSimple.MobileApp` | WebApi (HTTP) | Cross-platform mobile app using MAUI |
 
 ## Architecture
 
@@ -66,7 +68,7 @@ See [`docs/architecture.md`](docs/architecture.md) for a detailed breakdown.
 ```text
                   ┌────────────────────────────────────────────────────────────────┐
                   │              Projects that connect via HTTP                    │
-                  │          AdminCli (HTTP) · WebApp (HTTP)                       │
+                  │          WebApp (HTTP) · AdminCli (HTTP)                       │
                   └───────────────────────────────┬────────────────────────────────┘
                                                   │ HTTP / REST
                   ┌───────────────────────────────▼────────────────────────────────┐
@@ -310,6 +312,33 @@ $HOME/.dotnet/dotnet run
 
 ---
 
+## AppSimple.WebApp
+
+Full source map: [`docs/webapp-structure.md`](docs/webapp-structure.md)
+
+ASP.NET Core 10 MVC web front-end. Connects to `AppSimple.WebApi` over HTTP — no direct
+reference to Core or DataLib. Stores the JWT token in a cookie claim and forwards it on
+every API call.
+
+```bash
+# Start WebApi first, then:
+cd src/AppSimple.WebApp
+$HOME/.dotnet/dotnet run
+```
+
+**Default credentials:** `admin` / `Admin123!`
+
+### Features
+
+- Public landing page
+- Login form → JWT from WebApi stored as cookie claim
+- **Profile page** — view, edit profile fields, change password
+- **Users page** (Admin only) — user table + create/edit/delete
+- Dark Catppuccin Mocha theme — matches MvvmApp palette
+- No Bootstrap or external CSS — pure CSS variables inline in layout
+
+---
+
 ## Database schema
 
 ```sql
@@ -376,8 +405,9 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.UserCLI` — end-user console app (direct Core + DataLib) — **branch: UserCLI**
 - [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
 - [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
+- [x] `AppSimple.WebApp` — ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
 - [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
-- [ ] `AppSimple.WebApp` — ASP.NET Core MVC front-end connecting via WebApi HTTP
+- [ ] `AppSimple.MobileApp` — cross-platform mobile app (MAUI) connecting via WebApi HTTP
 - [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp
 
 ## Contributing
