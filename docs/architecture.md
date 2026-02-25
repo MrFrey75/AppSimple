@@ -9,7 +9,7 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │               HTTP Clients (connect via WebApi)                  │
-│  AdminCli · WebApp                                               │
+│  WebApp · AdminCli (future)                                      │
 │  - REST calls to WebApi endpoints                                │
 │  - No direct reference to Core or DataLib                        │
 └───────────────────────────────┬──────────────────────────────────┘
@@ -39,7 +39,7 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 │  Services/        IUserService, IAuthService + impls             │
 │  Auth/            IPasswordHasher, IJwtTokenService              │
 │  Common/          Result<T>, typed exceptions                    │
-│  Logging/         IAppLogger<T> abstraction                      │
+│  Logging/         IAppLogger<T> abstraction, LogPath             │
 │  Validators/      FluentValidation validators                    │
 └───────────────────────────────┬──────────────────────────────────┘
                                 │ implements interfaces from
@@ -47,22 +47,23 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 │                     AppSimple.DataLib                            │
 │  Infrastructure Layer — SQLite + Dapper                          │
 │                                                                  │
-│  Db/              Connection factory, DbInitializer              │
+│  Db/              Connection factory, DbInitializer, DatabasePath│
 │  Repositories/    UserRepository : IUserRepository               │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Project catalogue
 
-| Project | Type | Connects via | Purpose |
-|---|---|---|---|
-| `AppSimple.Core` | Class library | — | Domain models, services, auth, logging, validators |
-| `AppSimple.DataLib` | Class library | Core (direct) | SQLite + Dapper data access |
-| `AppSimple.WebApi` | ASP.NET Core Web API | Core + DataLib (direct) | REST API host — exposes Core services over HTTP |
-| `AppSimple.AdminCli` | Console application | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
-| `AppSimple.UserCLI` | Console application | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
-| `AppSimple.WebApp` | ASP.NET Core MVC | WebApi (HTTP) | Browser-based user GUI |
-| `AppSimple.MvvmApp` | Avalonia UI application | Core + DataLib (direct) | Cross-platform (Windows/macOS/Linux) desktop app using Avalonia UI + CommunityToolkit.Mvvm |
+| Project | Type | Status | Connects via | Purpose |
+|---|---|---|---|---|
+| `AppSimple.Core` | Class library | ✅ Built | — | Domain models, services, auth, logging, validators |
+| `AppSimple.DataLib` | Class library | ✅ Built | Core (direct) | SQLite + Dapper data access |
+| `AppSimple.WebApi` | ASP.NET Core Web API | ✅ Built | Core + DataLib (direct) | REST API host — exposes Core services over HTTP |
+| `AppSimple.WebApp` | ASP.NET Core MVC | ✅ Built | WebApi (HTTP) | Browser-based user GUI — dark Catppuccin theme |
+| `AppSimple.UserCLI` | Console application | ✅ Built | Core + DataLib (direct) | End-user CLI — local/offline, no WebApi required |
+| `AppSimple.MvvmApp` | Avalonia UI application | ✅ Built | Core + DataLib (direct) | Cross-platform desktop app (Windows/macOS/Linux) |
+| `AppSimple.AdminCli` | Console application | 🔜 Planned | WebApi (HTTP) | Admin tooling — user management, seeding, smoke tests |
+| `AppSimple.MobileApp` | MAUI application | 🔜 Planned | WebApi (HTTP) | Cross-platform mobile app |
 
 ## Dependency rules
 
@@ -83,14 +84,29 @@ Core is intentionally free of infrastructure concerns — it knows nothing about
 **Direct-reference projects** (WebApi, UserCLI, MvvmApp) wire Core and DataLib themselves:
 
 ```csharp
+var connectionString = DatabasePath.Resolve(config["Database:ConnectionString"]);
+var logDir           = LogPath.Resolve(config["AppLogging:LogDirectory"]);
+
 services
-    .AddAppLogging(opts => { ... })       // Core — Serilog + IAppLogger<>
-    .AddCoreServices()                     // Core — validators, auth services, user services
+    .AddAppLogging(opts =>
+    {
+        opts.EnableFile   = config.GetValue("AppLogging:EnableFile", true);
+        opts.LogDirectory = logDir;
+    })                                   // Core — Serilog + IAppLogger<>
+    .AddCoreServices()                   // Core — validators, auth services, user services
     .AddJwtAuthentication(opts => { ... }) // Core — IJwtTokenService + JwtOptions
-    .AddDataLibServices("Data Source=app.db"); // DataLib — DB connection + repositories
+    .AddDataLibServices(connectionString); // DataLib — DB connection + repositories
 ```
 
-**HTTP clients** (AdminCli, WebApp) only need an `HttpClient` configured to call the WebApi — they have no direct service registrations from Core or DataLib.
+**HTTP clients** (WebApp, AdminCli) have no Core/DataLib registrations. WebApp uses cookie auth and a typed `HttpClient`:
+
+```csharp
+// WebApp only
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opts => { opts.LoginPath = "/login"; ... });
+builder.Services.AddHttpClient<IApiClient, ApiClient>(c =>
+    c.BaseAddress = new Uri(config["WebApi:BaseUrl"]!));
+```
 
 ## Authentication flow
 
@@ -136,7 +152,6 @@ Host projects catch these in a global exception handler / middleware and map the
 
 ## Testing strategy
 
-- **Unit tests** (Core.Tests): all logic tested in isolation with NSubstitute mocks for dependencies. No I/O.
-- **Integration tests** (DataLib.Tests): real SQLite `:memory:` database — schema creation, seeding, and repository behaviour are tested end-to-end.
-- **Direct-reference clients** (UserCLI, MvvmApp): can reuse the in-memory SQLite helpers from DataLib.Tests for service-layer tests. UI tests use Console output capture (UserCLI) or Avalonia headless testing (MvvmApp).
-- **Future (HTTP projects)**: WebApi tests will use `WebApplicationFactory` for HTTP integration tests; AdminCli and WebApp tests will mock the HttpClient or use a test WebApi instance.
+- **Unit tests** (`Core.Tests`, 208 tests): all logic tested in isolation with NSubstitute mocks. No I/O.
+- **Integration tests** (`DataLib.Tests`, 36 tests): real SQLite `:memory:` database — schema creation, seeding, and full repository CRUD tested end-to-end.
+- **Future**: WebApi tests via `WebApplicationFactory`; WebApp/AdminCli tests via mocked `HttpClient` or a test WebApi instance.

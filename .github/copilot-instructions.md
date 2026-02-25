@@ -6,11 +6,14 @@
 AppSimple/
 ├── docs/                          # Additional documentation, design decisions, architectural diagrams
 ├── src/
-│   ├── AppSimple.Core/             # Core business logic, domain models, interfaces, extensions, convereters, and other shared code. Enums, constants, and common utilities should also go here. 
+│   ├── AppSimple.Core/             # Core business logic, domain models, interfaces, extensions, converters, and shared code
 │   ├── AppSimple.DataLib/          # Data access library (Dapper + SQLite), implements Core interfaces
-│   ├── AppSimple.WebApi/           # Future ASP.NET Core Web API project
-│   ├── AppSimple.AdminCli/         # Future Admin CLI project for seeding admin user and testing services
-│   ├── AppSimple.WebApp/           # Future ASP.NET Core MVC web app project for user GUI
+│   ├── AppSimple.WebApi/           # ASP.NET Core 10 REST API — JWT auth, role-based endpoints
+│   ├── AppSimple.WebApp/           # ASP.NET Core 10 MVC web app — connects via WebApi HTTP, cookie session
+│   ├── AppSimple.UserCLI/          # End-user console app — connects directly to Core + DataLib
+│   ├── AppSimple.MvvmApp/          # Cross-platform Avalonia UI desktop app — connects directly to Core + DataLib
+│   ├── AppSimple.AdminCli/         # Future: Admin CLI for user management and seeding via WebApi HTTP
+│   ├── AppSimple.MobileApp/        # Future: Cross-platform mobile app using MAUI via WebApi HTTP
 │   └── AppSimple.sln
 ├── .github/
 │   └── copilot-instructions.md     # Instructions for code generation and conventions

@@ -10,6 +10,8 @@ Complete wiring example for a **direct-reference** host project — one that ref
 |---|---|---|
 | `AppSimple.UserCLI` | `Program.cs` | File-only logging (`EnableConsole = false`) to avoid mixing log output with interactive UI |
 | `AppSimple.MvvmApp` | `App.axaml.cs` via `AddMvvmAppServices()` | Also registers ViewModels and `MainWindow` as singletons/transients |
+| `AppSimple.WebApi` | `Extensions/WebApiServiceExtensions.cs` via `AddWebApiServices()` | Also registers JwtBearer middleware, authorization policies, and OpenAPI |
+| `AppSimple.WebApp` | `Extensions/WebAppServiceExtensions.cs` via `AddWebAppServices()` | Uses cookie auth + typed `HttpClient<IApiClient>` instead of Core/DataLib. **No** `AddCoreServices` or `AddDataLibServices` call. |
 
 ## Shared paths (database & logs)
 

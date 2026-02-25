@@ -10,11 +10,14 @@ AppSimple is a .NET 10 starter solution demonstrating clean architecture, separa
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
+- [Shared Paths (Database & Logs)](#shared-paths-database--logs)
 - [DI Wiring (host project startup)](#di-wiring-host-project-startup)
 - [AppSimple.Core](#appsimplecore)
 - [AppSimple.DataLib](#appsimpledatalib)
 - [AppSimple.UserCLI](#appsimpleusercli)
 - [AppSimple.MvvmApp](#appsimplemvvmapp)
+- [AppSimple.WebApi](#appsimplewebapi)
+- [AppSimple.WebApp](#appsimplewebapp)
 - [Database schema](#database-schema)
 - [Testing](#testing)
 - [Tech Stack](#tech-stack)
@@ -261,6 +264,31 @@ Full source map: [`docs/datalib-structure.md`](docs/datalib-structure.md)
 AddDataLibServices(connectionString)
 // Calls DapperConfig.Register(), registers IDbConnectionFactory, DbInitializer, IUserRepository
 ```
+
+## AppSimple.WebApi
+
+Full source map: [`docs/webapi-structure.md`](docs/webapi-structure.md)
+
+ASP.NET Core 10 REST API. References Core + DataLib directly. Exposes JWT-secured endpoints consumed by `AppSimple.WebApp` and future HTTP clients.
+
+```bash
+cd src/AppSimple.WebApi
+$HOME/.dotnet/dotnet run
+# Listens on http://localhost:5157
+```
+
+**Default credentials:** `admin` / `Admin123!`
+
+### Endpoints (summary)
+
+| Group | Auth | Examples |
+|---|---|---|
+| Public | None | `GET /api` · `GET /api/health` |
+| Auth | None / Bearer | `POST /api/auth/login` → JWT · `GET /api/auth/validate` |
+| Protected | Bearer | `GET /api/protected/me` · `PUT /api/protected/me` · `POST /api/protected/me/change-password` |
+| Admin | Bearer + Admin role | `GET/POST /api/admin/users` · `PUT/DELETE /api/admin/users/{uid}` |
+
+---
 
 ## AppSimple.UserCLI
 

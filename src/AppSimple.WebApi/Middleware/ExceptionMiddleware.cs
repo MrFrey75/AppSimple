@@ -18,6 +18,7 @@ public sealed class ExceptionMiddleware
     {
         _next   = next;
         _logger = logger;
+        _logger.LogInformation("ExceptionMiddleware initialized.");
     }
 
     /// <inheritdoc />
@@ -51,6 +52,7 @@ public sealed class ExceptionMiddleware
         context.Response.ContentType = "application/json";
 
         var body = JsonSerializer.Serialize(new { error = message });
+        _logger.LogDebug("Returning error response: {StatusCode} - {Message}", context.Response.StatusCode, message);
         await context.Response.WriteAsync(body);
     }
 }
