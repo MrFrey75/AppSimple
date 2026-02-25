@@ -1,3 +1,4 @@
+using AppSimple.Core.Models.DTOs;
 using AppSimple.Core.Models.Requests;
 using System.Net.Http.Headers;
 using System.Text;

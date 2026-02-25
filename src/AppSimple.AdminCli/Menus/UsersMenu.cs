@@ -2,6 +2,7 @@ using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Session;
 using AppSimple.AdminCli.UI;
 using AppSimple.Core.Logging;
+using AppSimple.Core.Models.DTOs;
 using AppSimple.Core.Models.Requests;
 
 namespace AppSimple.AdminCli.Menus;

@@ -1,3 +1,4 @@
+using AppSimple.Core.Models.DTOs;
 using AppSimple.WebApp.Services;
 
 namespace AppSimple.WebApp.Models;

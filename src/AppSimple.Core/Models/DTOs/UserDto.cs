@@ -1,16 +1,19 @@
-namespace AppSimple.AdminCli.Services;
+namespace AppSimple.Core.Models.DTOs;
 
-/// <summary>Safe user representation returned by the WebApi.</summary>
+/// <summary>
+/// Safe user representation returned by the WebApi.
+/// Used by client-side projects (WebApp, AdminCli) to deserialize API responses.
+/// </summary>
 public sealed class UserDto
 {
     /// <summary>Gets or sets the unique identifier.</summary>
     public Guid Uid { get; set; }
 
     /// <summary>Gets or sets the username.</summary>
-    public string Username { get; set; } = "";
+    public string Username { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the email address.</summary>
-    public string Email { get; set; } = "";
+    public string Email { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the first name.</summary>
     public string? FirstName { get; set; }
@@ -36,9 +39,9 @@ public sealed class UserDto
     /// <summary>Gets or sets a value indicating whether the account is active.</summary>
     public bool IsActive { get; set; }
 
-    /// <summary>Gets or sets a value indicating whether this is a system user.</summary>
+    /// <summary>Gets or sets a value indicating whether this is a system-reserved user.</summary>
     public bool IsSystem { get; set; }
 
-    /// <summary>Gets or sets the date the account was created.</summary>
+    /// <summary>Gets or sets the UTC timestamp when the account was created.</summary>
     public DateTime CreatedAt { get; set; }
 }

@@ -1,4 +1,5 @@
 using AppSimple.AdminCli.Services;
+using AppSimple.Core.Models.DTOs;
 
 namespace AppSimple.AdminCli.UI;
 
