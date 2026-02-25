@@ -27,4 +27,8 @@
     <PackageReference Include="Serilog.Sinks.File" Version="*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AppSimple.Core\AppSimple.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using AppSimple.Core.Logging;
 
 namespace AppSimple.AdminCli.Services.Impl;
 
@@ -12,6 +13,7 @@ namespace AppSimple.AdminCli.Services.Impl;
 public sealed class ApiClient : IApiClient
 {
     private readonly HttpClient _http;
+    private readonly IAppLogger<ApiClient> _logger;
 
     private static readonly JsonSerializerOptions _jsonOpts = new()
     {
@@ -19,9 +21,10 @@ public sealed class ApiClient : IApiClient
     };
 
     /// <summary>Initializes a new instance of <see cref="ApiClient"/>.</summary>
-    public ApiClient(HttpClient http)
+    public ApiClient(HttpClient http, IAppLogger<ApiClient> logger)
     {
-        _http = http;
+        _http   = http;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -34,8 +37,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadFromJsonAsync<LoginResult>(_jsonOpts);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "LoginAsync failed for user '{Username}'", username);
             return null;
         }
     }
@@ -49,8 +53,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadFromJsonAsync<HealthResult>(_jsonOpts);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "GetHealthAsync failed");
             return null;
         }
     }
@@ -66,8 +71,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return [];
             return await response.Content.ReadFromJsonAsync<List<UserDto>>(_jsonOpts) ?? [];
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "GetAllUsersAsync failed");
             return [];
         }
     }
@@ -83,8 +89,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadFromJsonAsync<UserDto>(_jsonOpts);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "GetUserAsync failed for UID {Uid}", uid);
             return null;
         }
     }
@@ -103,8 +110,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadFromJsonAsync<UserDto>(_jsonOpts);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "CreateUserAsync failed for '{Username}'", username);
             return null;
         }
     }
@@ -122,8 +130,9 @@ public sealed class ApiClient : IApiClient
             if (!response.IsSuccessStatusCode) return null;
             return await response.Content.ReadFromJsonAsync<UserDto>(_jsonOpts);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "UpdateUserAsync failed for UID {Uid}", uid);
             return null;
         }
     }
@@ -138,8 +147,9 @@ public sealed class ApiClient : IApiClient
             using var response = await _http.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "DeleteUserAsync failed for UID {Uid}", uid);
             return false;
         }
     }
@@ -156,8 +166,9 @@ public sealed class ApiClient : IApiClient
             using var response = await _http.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "SetUserRoleAsync failed for UID {Uid}", uid);
             return false;
         }
     }
@@ -172,8 +183,9 @@ public sealed class ApiClient : IApiClient
             using var response = await _http.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "PingProtectedAsync failed");
             return false;
         }
     }

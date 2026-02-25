@@ -1,6 +1,7 @@
 using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Session;
 using AppSimple.AdminCli.UI;
+using AppSimple.Core.Logging;
 
 namespace AppSimple.AdminCli.Menus;
 
@@ -12,12 +13,14 @@ public sealed class SystemMenu
 {
     private readonly IApiClient _api;
     private readonly AdminSession _session;
+    private readonly IAppLogger<SystemMenu> _logger;
 
     /// <summary>Initializes a new instance of <see cref="SystemMenu"/>.</summary>
-    public SystemMenu(IApiClient api, AdminSession session)
+    public SystemMenu(IApiClient api, AdminSession session, IAppLogger<SystemMenu> logger)
     {
         _api     = api;
         _session = session;
+        _logger  = logger;
     }
 
     /// <summary>Displays the system menu and loops until Back is selected.</summary>
@@ -53,14 +56,17 @@ public sealed class SystemMenu
         ConsoleUI.Clear();
         ConsoleUI.WriteHeading("Health Check");
 
+        _logger.Debug("Admin '{Admin}' requested health check", _session.Username);
         var health = await _api.GetHealthAsync();
 
         if (health is null)
         {
+            _logger.Warning("Health check failed — API unreachable");
             ConsoleUI.WriteError("API is unreachable or returned an error.");
         }
         else
         {
+            _logger.Information("Health check OK — Status: {Status}, Uptime: {Uptime}", health.Status, health.Uptime);
             ConsoleUI.WriteSuccess("API responded successfully.");
             ConsoleUI.WriteLine();
             ConsoleUI.WriteKeyValue("Status:",    health.Status);
@@ -80,17 +86,24 @@ public sealed class SystemMenu
         ConsoleUI.WriteInfo("Running checks...");
         ConsoleUI.WriteLine();
 
+        _logger.Information("Admin '{Admin}' started smoke test", _session.Username);
+
         // 1 — API reachable
         var health = await _api.GetHealthAsync();
-        WriteCheckResult("GET /api/health — API reachable", health is not null);
+        bool healthOk = health is not null;
+        WriteCheckResult("GET /api/health — API reachable", healthOk);
+        _logger.Information("Smoke test: /api/health — {Result}", healthOk ? "PASS" : "FAIL");
 
         // 2 — Auth works
         bool authOk = await _api.PingProtectedAsync(_session.Token!);
         WriteCheckResult("GET /api/protected — Auth works", authOk);
+        _logger.Information("Smoke test: /api/protected — {Result}", authOk ? "PASS" : "FAIL");
 
         // 3 — Admin access
         var users = await _api.GetAllUsersAsync(_session.Token!);
-        WriteCheckResult("GET /api/admin/users — Admin access", users.Count >= 0);
+        bool adminOk = users.Count >= 0;
+        WriteCheckResult("GET /api/admin/users — Admin access", adminOk);
+        _logger.Information("Smoke test: /api/admin/users — {Result}", adminOk ? "PASS" : "FAIL");
 
         ConsoleUI.Pause();
     }
@@ -122,9 +135,15 @@ public sealed class SystemMenu
             var result = await _api.CreateUserAsync(_session.Token!, username, email, password);
 
             if (result is not null)
+            {
+                _logger.Information("Seeded test user '{Username}' ({Email})", username, email);
                 ConsoleUI.WriteSuccess($"Created '{username}' ({email}).");
+            }
             else
+            {
+                _logger.Warning("Seed skipped for '{Username}' — already exists or creation failed", username);
                 ConsoleUI.WriteWarning($"Skipped '{username}' — already exists or creation failed.");
+            }
         }
 
         ConsoleUI.Pause();

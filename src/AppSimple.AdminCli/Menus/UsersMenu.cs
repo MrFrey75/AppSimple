@@ -1,6 +1,7 @@
 using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Session;
 using AppSimple.AdminCli.UI;
+using AppSimple.Core.Logging;
 
 namespace AppSimple.AdminCli.Menus;
 
@@ -12,12 +13,14 @@ public sealed class UsersMenu
 {
     private readonly IApiClient _api;
     private readonly AdminSession _session;
+    private readonly IAppLogger<UsersMenu> _logger;
 
     /// <summary>Initializes a new instance of <see cref="UsersMenu"/>.</summary>
-    public UsersMenu(IApiClient api, AdminSession session)
+    public UsersMenu(IApiClient api, AdminSession session, IAppLogger<UsersMenu> logger)
     {
         _api     = api;
         _session = session;
+        _logger  = logger;
     }
 
     /// <summary>Displays the user management menu and loops until Back is selected.</summary>
@@ -87,9 +90,15 @@ public sealed class UsersMenu
         var user = await _api.CreateUserAsync(_session.Token!, username, email, password);
 
         if (user is not null)
+        {
+            _logger.Information("Admin '{Admin}' created user '{Username}' ({Email})", _session.Username, user.Username, user.Email);
             ConsoleUI.WriteSuccess($"User '{user.Username}' created successfully (UID: {user.Uid}).");
+        }
         else
+        {
+            _logger.Warning("Admin '{Admin}' failed to create user '{Username}'", _session.Username, username);
             ConsoleUI.WriteError("Failed to create user. The username or email may already be taken.");
+        }
 
         ConsoleUI.Pause();
     }
@@ -149,9 +158,15 @@ public sealed class UsersMenu
         var updated = await _api.UpdateUserAsync(_session.Token!, u.Uid, req);
 
         if (updated is not null)
+        {
+            _logger.Information("Admin '{Admin}' updated user '{Username}'", _session.Username, updated.Username);
             ConsoleUI.WriteSuccess($"User '{updated.Username}' updated successfully.");
+        }
         else
+        {
+            _logger.Warning("Admin '{Admin}' failed to update user '{Username}'", _session.Username, u.Username);
             ConsoleUI.WriteError("Update failed.");
+        }
 
         ConsoleUI.Pause();
     }
@@ -185,9 +200,15 @@ public sealed class UsersMenu
         bool ok = await _api.DeleteUserAsync(_session.Token!, u.Uid);
 
         if (ok)
+        {
+            _logger.Information("Admin '{Admin}' deleted user '{Username}' (UID: {Uid})", _session.Username, u.Username, u.Uid);
             ConsoleUI.WriteSuccess($"User '{u.Username}' deleted.");
+        }
         else
+        {
+            _logger.Warning("Admin '{Admin}' failed to delete user '{Username}'", _session.Username, u.Username);
             ConsoleUI.WriteError("Deletion failed.");
+        }
 
         ConsoleUI.Pause();
     }
@@ -217,9 +238,15 @@ public sealed class UsersMenu
         bool ok = await _api.SetUserRoleAsync(_session.Token!, u.Uid, newRole);
 
         if (ok)
+        {
+            _logger.Information("Admin '{Admin}' changed role of '{Username}' to {Role}", _session.Username, u.Username, newRole == 1 ? "Admin" : "User");
             ConsoleUI.WriteSuccess($"Role for '{u.Username}' set to {(newRole == 1 ? "Admin" : "User")}.");
+        }
         else
+        {
+            _logger.Warning("Admin '{Admin}' failed to change role of '{Username}'", _session.Username, u.Username);
             ConsoleUI.WriteError("Role change failed.");
+        }
 
         ConsoleUI.Pause();
     }

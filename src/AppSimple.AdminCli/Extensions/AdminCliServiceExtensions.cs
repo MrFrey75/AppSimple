@@ -2,10 +2,10 @@ using AppSimple.AdminCli.Menus;
 using AppSimple.AdminCli.Services;
 using AppSimple.AdminCli.Services.Impl;
 using AppSimple.AdminCli.Session;
+using AppSimple.Core.Extensions;
+using AppSimple.Core.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace AppSimple.AdminCli.Extensions;
 
@@ -22,22 +22,14 @@ public static class AdminCliServiceExtensions
         this IServiceCollection services,
         IConfiguration config)
     {
-        // ── Serilog file logging ───────────────────────────────────────────
-        var logDir     = LogPath.Resolve(config["AppLogging:LogDirectory"]);
-        var enableFile = config.GetValue("AppLogging:EnableFile", true);
-
-        var logConfig = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .Enrich.FromLogContext();
-
-        if (enableFile)
-            logConfig.WriteTo.File(
-                Path.Combine(logDir, "admincli-.log"),
-                rollingInterval: RollingInterval.Day);
-
-        Log.Logger = logConfig.CreateLogger();
-
-        services.AddLogging(lb => lb.AddSerilog(Log.Logger, dispose: true));
+        // ── Logging (via Core — file-only so output doesn't pollute the console UI) ──
+        services.AddAppLogging(opts =>
+        {
+            opts.ApplicationName = "AppSimple.AdminCli";
+            opts.EnableConsole   = false;
+            opts.EnableFile      = config.GetValue("AppLogging:EnableFile", true);
+            opts.LogDirectory    = LogPath.Resolve(config.GetValue("AppLogging:LogDirectory", ""))!;
+        });
 
         // ── Typed HttpClient ───────────────────────────────────────────────
         var baseUrl = config["WebApi:BaseUrl"] ?? "http://localhost:5157";
