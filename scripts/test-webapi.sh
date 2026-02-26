@@ -15,10 +15,14 @@
 #   ./scripts/test-webapi.sh http://myserver:8080
 #
 # PREREQUISITES
-#   • curl must be installed
-#   • AppSimple.WebApi must be running and reachable at base_url
-#     Start with: dotnet run --project src/AppSimple.WebApi
+#   • curl and dotnet must be installed
 #   • Default admin credentials must be seeded (admin / Admin123!)
+#
+# SERVER LIFECYCLE
+#   The script automatically builds and starts the WebApi before
+#   running tests, then shuts it down when finished (or on error).
+#   If the API is already running externally, it will be used as-is
+#   and will NOT be shut down by this script.
 #
 # WHAT IT TESTS
 #   Public     — /api, /api/public, /api/health
@@ -42,13 +46,17 @@ ADMIN_USER="admin"
 ADMIN_PASS="Admin123!"
 TOKEN=""
 NEW_UID=""
+API_PID=""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT="$SCRIPT_DIR/../src/AppSimple.WebApi/AppSimple.WebApi.csproj"
 
 # ── helpers ─────────────────────────────────────────────────
-RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; RESET='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[0;33m'; RESET='\033[0m'
 
 pass() { echo -e "${GREEN}  ✓ $1${RESET}"; }
 fail() { echo -e "${RED}  ✗ $1${RESET}"; }
 section() { echo -e "\n${CYAN}── $1 ──${RESET}"; }
+info() { echo -e "${YELLOW}  → $1${RESET}"; }
 
 check() {
   local label="$1" expected="$2" actual="$3"
@@ -58,6 +66,47 @@ check() {
     fail "$label  (expected to contain: '$expected', got: '$actual')"
   fi
 }
+
+# ── server lifecycle ─────────────────────────────────────────
+shutdown_api() {
+  if [[ -n "$API_PID" ]]; then
+    info "Stopping WebApi (PID $API_PID)..."
+    kill "$API_PID" 2>/dev/null
+    wait "$API_PID" 2>/dev/null
+    info "WebApi stopped."
+  fi
+}
+trap shutdown_api EXIT
+
+# Check if the API is already up; if not, build and start it
+if curl -sf "$BASE/api/health" >/dev/null 2>&1; then
+  info "WebApi already running at $BASE — using existing instance."
+else
+  info "Building WebApi..."
+  dotnet build "$PROJECT" --nologo -q || { echo -e "${RED}Build failed — aborting.${RESET}"; exit 1; }
+
+  info "Starting WebApi at $BASE..."
+  ASPNETCORE_URLS="$BASE" dotnet run --project "$PROJECT" --no-build --nologo \
+    >/tmp/appsimple-webapi.log 2>&1 &
+  API_PID=$!
+
+  # Wait up to 20 s for the server to become ready
+  for i in $(seq 1 20); do
+    sleep 1
+    if curl -sf "$BASE/api/health" >/dev/null 2>&1; then
+      pass "WebApi ready (PID $API_PID)"
+      break
+    fi
+    if ! kill -0 "$API_PID" 2>/dev/null; then
+      echo -e "${RED}WebApi process exited unexpectedly. See /tmp/appsimple-webapi.log${RESET}"
+      exit 1
+    fi
+    if [[ $i -eq 20 ]]; then
+      echo -e "${RED}WebApi did not start within 20 s. See /tmp/appsimple-webapi.log${RESET}"
+      exit 1
+    fi
+  done
+fi
 
 # ── Public endpoints ─────────────────────────────────────────
 section "Public"
@@ -178,3 +227,4 @@ fi
 
 echo ""
 echo "Done. Server: $BASE"
+echo "(Log: /tmp/appsimple-webapi.log)"
