@@ -181,5 +181,46 @@ public sealed class DbInitializer
         });
 
         _logger.Information("Default admin user seeded.");
+        SeedDefaultTagsForUser(admin.Uid);
+    }
+
+    /// <summary>
+    /// Seeds the default set of tags for the given user if they have none yet.
+    /// Idempotent — safe to call multiple times.
+    /// </summary>
+    public void SeedDefaultTagsForUser(Guid userUid)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+
+        var hasAny = connection.ExecuteScalar<int>(
+            "SELECT COUNT(1) FROM Tags WHERE UserUid = @UserUid",
+            new { UserUid = userUid.ToString() }) > 0;
+
+        if (hasAny) return;
+
+        var defaultTags = new (string Name, string Color)[]
+        {
+            ("Default",   "#CCCCCC"),
+            ("Personal",  "#A8E6A3"),
+            ("Work",      "#4A9EFF"),
+            ("Important", "#FF6B6B"),
+            ("Later",     "#FFD93D"),
+            ("Archive",   "#B0B0B0"),
+            ("Shared",    "#96CEB4"),
+            ("Private",   "#C7A8FF"),
+            ("Urgent",    "#FF4444"),
+            ("Follow-up", "#FFB347"),
+        };
+
+        var now = DateTime.UtcNow.ToString("O");
+        foreach (var (name, color) in defaultTags)
+        {
+            connection.Execute("""
+                INSERT INTO Tags (Uid, UserUid, Name, Color, IsSystem, CreatedAt, UpdatedAt)
+                VALUES (@Uid, @UserUid, @Name, @Color, 1, @Now, @Now)
+                """, new { Uid = Guid.CreateVersion7().ToString(), UserUid = userUid.ToString(), Name = name, Color = color, Now = now });
+        }
+
+        _logger.Information("Seeded default tags for user {UserUid}.", userUid);
     }
 }

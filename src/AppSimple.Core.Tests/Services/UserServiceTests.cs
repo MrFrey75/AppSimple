@@ -14,13 +14,14 @@ namespace AppSimple.Core.Tests.Services;
 public sealed class UserServiceTests
 {
     private readonly IUserRepository _repo       = Substitute.For<IUserRepository>();
+    private readonly ITagRepository  _tagRepo    = Substitute.For<ITagRepository>();
     private readonly IPasswordHasher _hasher     = Substitute.For<IPasswordHasher>();
     private readonly IAppLogger<UserService> _log = Substitute.For<IAppLogger<UserService>>();
     private readonly UserService _svc;
 
     public UserServiceTests()
     {
-        _svc = new UserService(_repo, _hasher, _log);
+        _svc = new UserService(_repo, _tagRepo, _hasher, _log);
         _hasher.Hash(Arg.Any<string>()).Returns("$2a$hashed");
     }
 

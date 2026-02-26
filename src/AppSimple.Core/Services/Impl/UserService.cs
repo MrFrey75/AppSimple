@@ -12,18 +12,35 @@ namespace AppSimple.Core.Services.Impl;
 public sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly ITagRepository  _tagRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAppLogger<UserService> _logger;
+
+    private static readonly IReadOnlyList<(string Name, string Color)> _defaultTags =
+    [
+        ("Default",   "#CCCCCC"),
+        ("Personal",  "#A8E6A3"),
+        ("Work",      "#4A9EFF"),
+        ("Important", "#FF6B6B"),
+        ("Later",     "#FFD93D"),
+        ("Archive",   "#B0B0B0"),
+        ("Shared",    "#96CEB4"),
+        ("Private",   "#C7A8FF"),
+        ("Urgent",    "#FF4444"),
+        ("Follow-up", "#FFB347"),
+    ];
 
     /// <summary>
     /// Initializes a new instance of <see cref="UserService"/>.
     /// </summary>
     public UserService(
         IUserRepository userRepository,
+        ITagRepository tagRepository,
         IPasswordHasher passwordHasher,
         IAppLogger<UserService> logger)
     {
         _userRepository = userRepository;
+        _tagRepository  = tagRepository;
         _passwordHasher = passwordHasher;
         _logger         = logger;
     }
@@ -63,6 +80,23 @@ public sealed class UserService : IUserService
 
         await _userRepository.AddAsync(user);
         _logger.Information("User {Username} created with uid {Uid}.", username, user.Uid);
+
+        // Seed default tags for the new user
+        var now2 = DateTime.UtcNow;
+        foreach (var (name, color) in _defaultTags)
+        {
+            await _tagRepository.AddAsync(new Tag
+            {
+                Uid       = Guid.CreateVersion7(),
+                UserUid   = user.Uid,
+                Name      = name,
+                Color     = color,
+                IsSystem  = true,
+                CreatedAt = now2,
+                UpdatedAt = now2,
+            });
+        }
+        _logger.Information("Default tags seeded for user {Uid}.", user.Uid);
 
         return user;
     }
