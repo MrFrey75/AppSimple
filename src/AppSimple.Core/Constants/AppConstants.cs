@@ -55,23 +55,7 @@ public static class AppConstants
     /// <summary>Config key: JWT token lifetime in minutes.</summary>
     public const string ConfigJwtExpiration = "Jwt:ExpirationMinutes";
 
-    // ── Default tags ─────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// The set of default tags seeded for every new user.
-    /// Each entry is (Name, HexColor).
-    /// </summary>
-    public static readonly IReadOnlyList<(string Name, string Color)> DefaultTags =
-    [
-        ("Work",      "#4A9EFF"),
-        ("Personal",  "#A8E6A3"),
-        ("Important", "#FF6B6B"),
-        ("Todo",      "#FFD93D"),
-        ("Ideas",     "#C7A8FF"),
-        ("Learning",  "#FFB347"),
-        ("Finance",   "#96CEB4"),
-        ("Health",    "#F8B4B4"),
-    ];
+    // ── Validation limits ────────────────────────────────────────────────────
 
     /// <summary>The minimum password length enforced by validation.</summary>
     public const int MinPasswordLength = 8;

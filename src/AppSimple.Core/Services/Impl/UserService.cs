@@ -3,7 +3,6 @@ using AppSimple.Core.Common.Exceptions;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
-using AppSimple.Core.Services;
 
 namespace AppSimple.Core.Services.Impl;
 
@@ -14,7 +13,6 @@ public sealed class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly ITagService     _tagService;
     private readonly IAppLogger<UserService> _logger;
 
     /// <summary>
@@ -23,12 +21,10 @@ public sealed class UserService : IUserService
     public UserService(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        ITagService tagService,
         IAppLogger<UserService> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
-        _tagService     = tagService;
         _logger         = logger;
     }
 
@@ -67,8 +63,6 @@ public sealed class UserService : IUserService
 
         await _userRepository.AddAsync(user);
         _logger.Information("User {Username} created with uid {Uid}.", username, user.Uid);
-
-        await _tagService.SeedDefaultTagsAsync(user.Uid);
 
         return user;
     }

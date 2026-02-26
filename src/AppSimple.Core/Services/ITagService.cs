@@ -37,11 +37,4 @@ public interface ITagService
     /// <summary>Deletes a tag by its unique identifier. Also removes all note associations.</summary>
     /// <param name="uid">The UID of the tag to delete.</param>
     Task DeleteAsync(Guid uid);
-
-    /// <summary>
-    /// Seeds the default system tags for a user if they have no tags yet.
-    /// Idempotent — safe to call multiple times.
-    /// </summary>
-    /// <param name="userUid">The UID of the user to seed tags for.</param>
-    Task SeedDefaultTagsAsync(Guid userUid);
 }

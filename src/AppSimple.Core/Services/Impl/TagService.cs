@@ -1,4 +1,3 @@
-using AppSimple.Core.Constants;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
@@ -75,30 +74,5 @@ public sealed class TagService : ITagService
     {
         await _tags.DeleteAsync(uid);
         _logger.Information("Tag {Uid} deleted.", uid);
-    }
-
-    /// <inheritdoc />
-    public async Task SeedDefaultTagsAsync(Guid userUid)
-    {
-        var existing = await _tags.GetByUserUidAsync(userUid);
-        if (existing.Any()) return;
-
-        var now = DateTime.UtcNow;
-        foreach (var (name, color) in AppConstants.DefaultTags)
-        {
-            var tag = new Tag
-            {
-                Uid       = Guid.CreateVersion7(),
-                UserUid   = userUid,
-                Name      = name,
-                Color     = color,
-                IsSystem  = true,
-                CreatedAt = now,
-                UpdatedAt = now,
-            };
-            await _tags.AddAsync(tag);
-        }
-        _logger.Information("Seeded {Count} default tags for user {UserUid}.",
-            AppConstants.DefaultTags.Count, userUid);
     }
 }
