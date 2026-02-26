@@ -32,11 +32,15 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 │                       AppSimple.Core                             │
 │  Domain Layer — owns business rules                              │
 │                                                                  │
-│  Models/          BaseEntity, User                               │
-│  Enums/           UserRole, Permission                           │
+│  Models/          BaseEntity, User, Note, Tag, Contact + children│
+│  Enums/           UserRole, Permission, EmailType, PhoneType,    │
+│                   AddressType                                    │
 │  Constants/       AppConstants                                   │
-│  Interfaces/      IRepository<T>, IUserRepository                │
-│  Services/        IUserService, IAuthService + impls             │
+│  Interfaces/      IRepository<T>, IUserRepository,               │
+│                   INoteRepository, ITagRepository,               │
+│                   IContactRepository                             │
+│  Services/        IUserService, IAuthService, INoteService,      │
+│                   ITagService, IContactService + impls           │
 │  Auth/            IPasswordHasher, IJwtTokenService              │
 │  Common/          Result<T>, typed exceptions                    │
 │  Logging/         IAppLogger<T> abstraction, LogPath             │
@@ -48,7 +52,8 @@ AppSimple has two distinct integration tiers for host projects: those that refer
 │  Infrastructure Layer — SQLite + Dapper                          │
 │                                                                  │
 │  Db/              Connection factory, DbInitializer, DatabasePath│
-│  Repositories/    UserRepository : IUserRepository               │
+│  Repositories/    UserRepository, NoteRepository, TagRepository, │
+│                   ContactRepository                              │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -133,6 +138,16 @@ IUserService (Core interface)
     └── UserService (Core impl)
             └── IUserRepository (Core interface)
                     └── UserRepository (DataLib impl, Dapper + SQLite)
+
+INoteService (Core interface)
+    └── NoteService (Core impl)
+            └── INoteRepository / ITagRepository (Core interfaces)
+                    └── NoteRepository / TagRepository (DataLib impl)
+
+IContactService (Core interface)
+    └── ContactService (Core impl)
+            └── IContactRepository (Core interface)
+                    └── ContactRepository (DataLib impl, children via PopulateChildrenAsync)
 ```
 
 All repositories are scoped to the DI request lifetime. The connection factory is a singleton that creates a new open connection per call.
@@ -151,6 +166,6 @@ Host projects catch these in a global exception handler / middleware and map the
 
 ## Testing strategy
 
-- **Unit tests** (`Core.Tests`, 208 tests): all logic tested in isolation with NSubstitute mocks. No I/O.
-- **Integration tests** (`DataLib.Tests`, 36 tests): real SQLite `:memory:` database — schema creation, seeding, and full repository CRUD tested end-to-end.
+- **Unit tests** (`Core.Tests`, 258 tests): all logic tested in isolation with NSubstitute mocks. No I/O.
+- **Integration tests** (`DataLib.Tests`, 45 tests): real SQLite `:memory:` database — schema creation, seeding, and full repository CRUD tested end-to-end.
 - **Future**: WebApi tests via `WebApplicationFactory`; WebApp/AdminCli tests via mocked `HttpClient` or a test WebApi instance.

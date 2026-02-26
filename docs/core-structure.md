@@ -174,6 +174,28 @@ EditUser     = 22   Edit any user (Admin)
 DeleteUser   = 23   Delete any user (Admin)
 ```
 
+### `EmailType.cs`
+```
+Personal = 0   Personal email address
+Work     = 1   Work / professional email
+Other    = 2   Any other type
+```
+
+### `PhoneType.cs`
+```
+Mobile = 0   Mobile / cell phone
+Home   = 1   Home phone
+Work   = 2   Work / office phone
+Other  = 3   Any other type
+```
+
+### `AddressType.cs`
+```
+Home  = 0   Residential address
+Work  = 1   Office / work address
+Other = 2   Any other type
+```
+
 ---
 
 ## `Constants/AppConstants.cs`
