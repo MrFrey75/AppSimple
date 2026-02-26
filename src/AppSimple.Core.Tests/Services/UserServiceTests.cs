@@ -4,6 +4,7 @@ using AppSimple.Core.Enums;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
+using AppSimple.Core.Services;
 using AppSimple.Core.Services.Impl;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
@@ -15,12 +16,13 @@ public sealed class UserServiceTests
 {
     private readonly IUserRepository _repo       = Substitute.For<IUserRepository>();
     private readonly IPasswordHasher _hasher     = Substitute.For<IPasswordHasher>();
+    private readonly ITagService     _tagService = Substitute.For<ITagService>();
     private readonly IAppLogger<UserService> _log = Substitute.For<IAppLogger<UserService>>();
     private readonly UserService _svc;
 
     public UserServiceTests()
     {
-        _svc = new UserService(_repo, _hasher, _log);
+        _svc = new UserService(_repo, _hasher, _tagService, _log);
         _hasher.Hash(Arg.Any<string>()).Returns("$2a$hashed");
     }
 
