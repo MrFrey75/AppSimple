@@ -62,12 +62,13 @@ Implementation of `IDbConnectionFactory`. Creates and opens a `SqliteConnection`
 DapperConfig.Register();
 ```
 
-Registers two Dapper type handlers:
+Registers three Dapper type handlers:
 
 | Handler | Maps |
 |---|---|
 | `GuidTypeHandler` | `TEXT` ↔ `System.Guid` |
 | `DateTimeUtcTypeHandler` | `TEXT` ↔ `System.DateTime` (UTC, ISO-8601) |
+| `JsonStringListTypeHandler` | `TEXT` (JSON) ↔ `List<string>` |
 
 Without these handlers, Dapper cannot map GUID and DateTime columns from SQLite TEXT storage into C# types.
 
@@ -90,34 +91,31 @@ void SeedAdminUser(string hashedAdminPassword)
 **Schema created:**
 
 ```sql
-CREATE TABLE IF NOT EXISTS Users ( ... );   -- see README for full DDL
+CREATE TABLE IF NOT EXISTS Notes ( ... );        -- see README for full DDL
+CREATE TABLE IF NOT EXISTS NoteTags ( ... );     -- NoteUid + TagUid junction
 
-CREATE TABLE IF NOT EXISTS Tags (
-    Uid         TEXT NOT NULL PRIMARY KEY,
-    UserUid     TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
-    Name        TEXT NOT NULL COLLATE NOCASE,
-    Description TEXT,
-    Color       TEXT NOT NULL DEFAULT '#CCCCCC',
-    IsSystem    INTEGER NOT NULL DEFAULT 0,
-    CreatedAt   TEXT NOT NULL,
-    UpdatedAt   TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS Contacts (
+    Uid          TEXT NOT NULL PRIMARY KEY,
+    OwnerUserUid TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Name         TEXT NOT NULL COLLATE NOCASE,
+    Tags         TEXT NOT NULL DEFAULT '[]',     -- JSON array of strings
+    IsSystem     INTEGER NOT NULL DEFAULT 0,
+    CreatedAt    TEXT NOT NULL,
+    UpdatedAt    TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Notes (
-    Uid       TEXT NOT NULL PRIMARY KEY,
-    UserUid   TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
-    Title     TEXT NOT NULL DEFAULT '',
-    Content   TEXT NOT NULL,
-    IsSystem  INTEGER NOT NULL DEFAULT 0,
-    CreatedAt TEXT NOT NULL,
-    UpdatedAt TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS ContactEmailAddresses (
+    Uid        TEXT NOT NULL PRIMARY KEY,
+    ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+    Email      TEXT NOT NULL COLLATE NOCASE,
+    IsPrimary  INTEGER NOT NULL DEFAULT 0,
+    Tags       TEXT NOT NULL DEFAULT '[]',
+    Type       INTEGER NOT NULL DEFAULT 0,   -- EmailType enum value
+    ...
 );
 
-CREATE TABLE IF NOT EXISTS NoteTags (
-    NoteUid TEXT NOT NULL REFERENCES Notes(Uid) ON DELETE CASCADE,
-    TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
-    PRIMARY KEY (NoteUid, TagUid)
-);
+CREATE TABLE IF NOT EXISTS ContactPhoneNumbers ( ... );
+CREATE TABLE IF NOT EXISTS ContactAddresses ( ... );
 ```
 
 ---
@@ -161,14 +159,23 @@ Implements `INoteRepository` using Dapper. Tags are loaded via a second query jo
 | `AddTagAsync(noteUid, tagUid)` | `INSERT OR IGNORE INTO NoteTags` |
 | `RemoveTagAsync(noteUid, tagUid)` | DELETE from NoteTags |
 
-**`LoadTagsAsync` helper** — joins `Tags` through `NoteTags` for a single note:
-```sql
-SELECT t.* FROM Tags t
-INNER JOIN NoteTags nt ON t.Uid = nt.TagUid
-WHERE nt.NoteUid = @NoteUid
-```
+### `ContactRepository.cs`
+Implements `IContactRepository`. Child collections are loaded via separate queries per contact.
+`List<string>` Tags columns are serialised as JSON by `JsonStringListTypeHandler`.
 
-### `TagRepository.cs`
+| Method | SQL notes |
+|---|---|
+| `GetByUidAsync(uid)` | SELECT from Contacts + `PopulateChildrenAsync` |
+| `GetAllAsync()` | All contacts ordered by Name + children per contact |
+| `GetByOwnerUidAsync(ownerUid)` | `WHERE OwnerUserUid = @OwnerUserUid` + children |
+| `AddAsync(entity)` | INSERT into Contacts |
+| `UpdateAsync(entity)` | UPDATE Name, Tags, UpdatedAt |
+| `DeleteAsync(uid)` | DELETE from Contacts (children removed by CASCADE) |
+| `AddEmailAddressAsync` / `UpdateEmailAddressAsync` / `DeleteEmailAddressAsync` | ContactEmailAddresses table |
+| `AddPhoneNumberAsync` / `UpdatePhoneNumberAsync` / `DeletePhoneNumberAsync` | ContactPhoneNumbers table |
+| `AddAddressAsync` / `UpdateAddressAsync` / `DeleteAddressAsync` | ContactAddresses table |
+
+**`PopulateChildrenAsync` helper** — fires three queries (emails, phones, addresses) for one contact using the shared connection.
 Implements `ITagRepository` using Dapper.
 
 | Method | SQL notes |
@@ -199,6 +206,7 @@ Registers:
 | `IUserRepository` → `UserRepository` | Scoped |
 | `INoteRepository` → `NoteRepository` | Scoped |
 | `ITagRepository` → `TagRepository` | Scoped |
+| `IContactRepository` → `ContactRepository` | Scoped |
 | `IDatabaseResetService` → `DatabaseResetService` | Scoped |
 
 Also calls `DapperConfig.Register()` exactly once.

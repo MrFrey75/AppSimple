@@ -17,6 +17,7 @@ public static class DapperConfig
     {
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeUtcTypeHandler());
+        SqlMapper.AddTypeHandler(JsonStringListTypeHandler.Instance);
         SqlMapper.RemoveTypeMap(typeof(Guid));
         SqlMapper.RemoveTypeMap(typeof(Guid?));
     }

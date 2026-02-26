@@ -47,6 +47,7 @@ public static class CoreServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INoteService, NoteService>();
         services.AddScoped<ITagService, TagService>();
+        services.AddScoped<IContactService, ContactService>();
 
         return services;
     }

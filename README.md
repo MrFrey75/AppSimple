@@ -172,6 +172,10 @@ Full source map: [`docs/core-structure.md`](docs/core-structure.md)
 | `User` | Extends `BaseEntity` — username, email, password hash, profile fields, role, active flag |
 | `Note` | Extends `BaseEntity` — title, content, owning `UserUid`, associated `Tags` list |
 | `Tag` | Extends `BaseEntity` — name, description, hex color, owning `UserUid` |
+| `Contact` | Extends `BaseEntity` — owner `OwnerUserUid`, name, string Tags (JSON), child collections |
+| `EmailAddress` | Extends `BaseEntity` — contact child; email, type, isPrimary, string Tags |
+| `PhoneNumber` | Extends `BaseEntity` — contact child; number, type, isPrimary, string Tags |
+| `ContactAddress` | Extends `BaseEntity` — contact child; street/city/state/postal/country, type, isPrimary |
 
 ### Enums (`Enums/`)
 
@@ -210,6 +214,7 @@ Full source map: [`docs/core-structure.md`](docs/core-structure.md)
 | `IAuthService` / `AuthService` | LoginAsync → `AuthResult` (JWT on success), ValidateToken |
 | `INoteService` / `NoteService` | GetByUid, GetAll (admin), GetByUserUid, Create, Update, Delete, AddTag, RemoveTag |
 | `ITagService` / `TagService` | GetByUid, GetAll (admin), GetByUserUid, Create, Update, Delete |
+| `IContactService` / `ContactService` | GetByUid, GetAll (admin), GetByOwnerUid, Create, Update, Delete; full CRUD for child EmailAddresses, PhoneNumbers, Addresses |
 
 ### Logging (`Logging/`)
 
@@ -441,6 +446,56 @@ CREATE TABLE NoteTags (
     TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
     PRIMARY KEY (NoteUid, TagUid)
 );
+
+CREATE TABLE Contacts (
+    Uid          TEXT NOT NULL PRIMARY KEY,
+    OwnerUserUid TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Name         TEXT NOT NULL COLLATE NOCASE,
+    Tags         TEXT NOT NULL DEFAULT '[]',
+    IsSystem     INTEGER NOT NULL DEFAULT 0,
+    CreatedAt    TEXT NOT NULL,
+    UpdatedAt    TEXT NOT NULL
+);
+
+CREATE TABLE ContactEmailAddresses (
+    Uid        TEXT NOT NULL PRIMARY KEY,
+    ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+    Email      TEXT NOT NULL COLLATE NOCASE,
+    IsPrimary  INTEGER NOT NULL DEFAULT 0,
+    Tags       TEXT NOT NULL DEFAULT '[]',
+    Type       INTEGER NOT NULL DEFAULT 0,
+    IsSystem   INTEGER NOT NULL DEFAULT 0,
+    CreatedAt  TEXT NOT NULL,
+    UpdatedAt  TEXT NOT NULL
+);
+
+CREATE TABLE ContactPhoneNumbers (
+    Uid        TEXT NOT NULL PRIMARY KEY,
+    ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+    Number     TEXT NOT NULL,
+    IsPrimary  INTEGER NOT NULL DEFAULT 0,
+    Tags       TEXT NOT NULL DEFAULT '[]',
+    Type       INTEGER NOT NULL DEFAULT 0,
+    IsSystem   INTEGER NOT NULL DEFAULT 0,
+    CreatedAt  TEXT NOT NULL,
+    UpdatedAt  TEXT NOT NULL
+);
+
+CREATE TABLE ContactAddresses (
+    Uid        TEXT NOT NULL PRIMARY KEY,
+    ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+    Street     TEXT NOT NULL,
+    City       TEXT NOT NULL,
+    State      TEXT NOT NULL DEFAULT '',
+    PostalCode TEXT NOT NULL DEFAULT '',
+    Country    TEXT NOT NULL,
+    IsPrimary  INTEGER NOT NULL DEFAULT 0,
+    Tags       TEXT NOT NULL DEFAULT '[]',
+    Type       INTEGER NOT NULL DEFAULT 0,
+    IsSystem   INTEGER NOT NULL DEFAULT 0,
+    CreatedAt  TEXT NOT NULL,
+    UpdatedAt  TEXT NOT NULL
+);
 ```
 
 ## Testing
@@ -489,6 +544,7 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
 - [x] `AppSimple.WebApp` — ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
 - [x] Note-taking feature — `Note` + `Tag` models, services, repositories, DB schema (Notes, Tags, NoteTags)
+- [x] Contact manager feature — `Contact` + child models, services, repositories, DB schema (Contacts, ContactEmailAddresses, ContactPhoneNumbers, ContactAddresses)
 - [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
 - [ ] Note-taking UI in UserCLI, MvvmApp, WebApi, and WebApp
 - [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp

@@ -77,6 +77,56 @@ public sealed class DbInitializer
                 TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
                 PRIMARY KEY (NoteUid, TagUid)
             );
+
+            CREATE TABLE IF NOT EXISTS Contacts (
+                Uid          TEXT NOT NULL PRIMARY KEY,
+                OwnerUserUid TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+                Name         TEXT NOT NULL COLLATE NOCASE,
+                Tags         TEXT NOT NULL DEFAULT '[]',
+                IsSystem     INTEGER NOT NULL DEFAULT 0,
+                CreatedAt    TEXT NOT NULL,
+                UpdatedAt    TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS ContactEmailAddresses (
+                Uid        TEXT NOT NULL PRIMARY KEY,
+                ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+                Email      TEXT NOT NULL COLLATE NOCASE,
+                IsPrimary  INTEGER NOT NULL DEFAULT 0,
+                Tags       TEXT NOT NULL DEFAULT '[]',
+                Type       INTEGER NOT NULL DEFAULT 0,
+                IsSystem   INTEGER NOT NULL DEFAULT 0,
+                CreatedAt  TEXT NOT NULL,
+                UpdatedAt  TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS ContactPhoneNumbers (
+                Uid        TEXT NOT NULL PRIMARY KEY,
+                ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+                Number     TEXT NOT NULL,
+                IsPrimary  INTEGER NOT NULL DEFAULT 0,
+                Tags       TEXT NOT NULL DEFAULT '[]',
+                Type       INTEGER NOT NULL DEFAULT 0,
+                IsSystem   INTEGER NOT NULL DEFAULT 0,
+                CreatedAt  TEXT NOT NULL,
+                UpdatedAt  TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS ContactAddresses (
+                Uid        TEXT NOT NULL PRIMARY KEY,
+                ContactUid TEXT NOT NULL REFERENCES Contacts(Uid) ON DELETE CASCADE,
+                Street     TEXT NOT NULL,
+                City       TEXT NOT NULL,
+                State      TEXT NOT NULL DEFAULT '',
+                PostalCode TEXT NOT NULL DEFAULT '',
+                Country    TEXT NOT NULL,
+                IsPrimary  INTEGER NOT NULL DEFAULT 0,
+                Tags       TEXT NOT NULL DEFAULT '[]',
+                Type       INTEGER NOT NULL DEFAULT 0,
+                IsSystem   INTEGER NOT NULL DEFAULT 0,
+                CreatedAt  TEXT NOT NULL,
+                UpdatedAt  TEXT NOT NULL
+            );
             """);
 
         _logger.Information("Database schema initialized.");

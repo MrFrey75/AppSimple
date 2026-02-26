@@ -76,6 +76,55 @@ Entity representing a user-defined label attachable to notes.
 | `UserUid` | `Guid` | ✓ | FK → owning user |
 | `Color` | `string?` | — | Hex color string, defaults to `#CCCCCC` |
 
+### `Contact.cs`
+Entity representing a contact owned by a user. Child collections are populated by the repository.
+
+| Property | Type | Required | Notes |
+|---|---|---|---|
+| `OwnerUserUid` | `Guid` | ✓ | FK → owning user |
+| `Name` | `string` | ✓ | Display name (case-insensitive in DB) |
+| `Tags` | `List<string>` | — | Free-form labels; stored as JSON TEXT |
+| `EmailAddresses` | `List<EmailAddress>` | — | Populated by repository |
+| `PhoneNumbers` | `List<PhoneNumber>` | — | Populated by repository |
+| `Addresses` | `List<ContactAddress>` | — | Populated by repository |
+
+### `EmailAddress.cs`
+Child entity — an email address belonging to a `Contact`.
+
+| Property | Type | Notes |
+|---|---|---|
+| `ContactUid` | `Guid` | FK → parent contact |
+| `Email` | `string` | Required |
+| `IsPrimary` | `bool` | Marks preferred email |
+| `Type` | `EmailType` | Personal / Work / Other |
+| `Tags` | `List<string>` | JSON TEXT |
+
+### `PhoneNumber.cs`
+Child entity — a phone number belonging to a `Contact`.
+
+| Property | Type | Notes |
+|---|---|---|
+| `ContactUid` | `Guid` | FK → parent contact |
+| `Number` | `string` | Required |
+| `IsPrimary` | `bool` | Marks preferred number |
+| `Type` | `PhoneType` | Mobile / Home / Work / Other |
+| `Tags` | `List<string>` | JSON TEXT |
+
+### `ContactAddress.cs`
+Child entity — a postal address belonging to a `Contact`.
+
+| Property | Type | Notes |
+|---|---|---|
+| `ContactUid` | `Guid` | FK → parent contact |
+| `Street` | `string` | Required |
+| `City` | `string` | Required |
+| `State` | `string` | Optional |
+| `PostalCode` | `string` | Optional |
+| `Country` | `string` | Required |
+| `IsPrimary` | `bool` | Marks preferred address |
+| `Type` | `AddressType` | Home / Work / Other |
+| `Tags` | `List<string>` | JSON TEXT |
+
 ### `Models/Requests/`
 
 | Class | Used by | Key fields |
@@ -87,6 +136,11 @@ Entity representing a user-defined label attachable to notes.
 | `UpdateNoteRequest` | `INoteService.UpdateAsync` callers | Title?, Content? — null means no change |
 | `CreateTagRequest` | `ITagService.CreateAsync` callers | Name (required), Description?, Color? |
 | `UpdateTagRequest` | `ITagService.UpdateAsync` callers | Name?, Description?, Color? — null means no change |
+| `CreateContactRequest` | `IContactService.CreateAsync` callers | Name (required), Tags list |
+| `UpdateContactRequest` | `IContactService.UpdateAsync` callers | Name?, Tags? — null means no change |
+| `ContactEmailRequest` | `IContactService.AddEmailAddressAsync` callers | Email (required), Type, IsPrimary, Tags |
+| `ContactPhoneRequest` | `IContactService.AddPhoneNumberAsync` callers | Number (required), Type, IsPrimary, Tags |
+| `ContactAddressRequest` | `IContactService.AddAddressAsync` callers | Street, City, Country (required); State, PostalCode optional |
 
 ### `Models/DTOs/`
 
@@ -95,6 +149,10 @@ Entity representing a user-defined label attachable to notes.
 | `UserDto` | `User` | Uid, Username, Email, profile fields, Role enum, IsActive, CreatedAt. `UserDto.From(user)` static mapper. |
 | `NoteDto` | `Note` | Uid, Title, Content, UserUid, Tags (as `IReadOnlyList<TagDto>`), CreatedAt, UpdatedAt. `NoteDto.From(note)` static mapper. |
 | `TagDto` | `Tag` | Uid, Name, Description, UserUid, Color, CreatedAt. `TagDto.From(tag)` static mapper. |
+| `ContactDto` | `Contact` | Uid, OwnerUserUid, Name, Tags, nested EmailAddresses/PhoneNumbers/Addresses, CreatedAt, UpdatedAt. `ContactDto.From(contact)`. |
+| `EmailAddressDto` | `EmailAddress` | Uid, Email, IsPrimary, Tags, Type. `EmailAddressDto.From(e)`. |
+| `PhoneNumberDto` | `PhoneNumber` | Uid, Number, IsPrimary, Tags, Type. `PhoneNumberDto.From(p)`. |
+| `ContactAddressDto` | `ContactAddress` | Uid, Street, City, State, PostalCode, Country, IsPrimary, Tags, Type. `ContactAddressDto.From(a)`. |
 
 ---
 
@@ -171,6 +229,28 @@ Extends `IRepository<Tag>` with tag-specific lookups.
 ```csharp
 Task<IEnumerable<Tag>>  GetByUserUidAsync(Guid userUid)
 Task<Tag?>              GetByNameAsync(Guid userUid, string name)  // case-insensitive
+```
+
+### `IContactRepository.cs`
+Extends `IRepository<Contact>` with child-collection management.
+
+```csharp
+Task<IEnumerable<Contact>>  GetByOwnerUidAsync(Guid ownerUserUid)
+
+// Email addresses
+Task  AddEmailAddressAsync(EmailAddress email)
+Task  UpdateEmailAddressAsync(EmailAddress email)
+Task  DeleteEmailAddressAsync(Guid uid)
+
+// Phone numbers
+Task  AddPhoneNumberAsync(PhoneNumber phone)
+Task  UpdatePhoneNumberAsync(PhoneNumber phone)
+Task  DeletePhoneNumberAsync(Guid uid)
+
+// Postal addresses
+Task  AddAddressAsync(ContactAddress address)
+Task  UpdateAddressAsync(ContactAddress address)
+Task  DeleteAddressAsync(Guid uid)
 ```
 
 ---
@@ -297,6 +377,33 @@ Task                   DeleteAsync(Guid uid)
 
 **Access rules:** Tags are user-specific. Admins may read all tags, but may only edit or delete their own.
 
+### `IContactService.cs`
+```csharp
+Task<Contact?>             GetByUidAsync(Guid uid)
+Task<IEnumerable<Contact>> GetAllAsync()                                   // admin use
+Task<IEnumerable<Contact>> GetByOwnerUidAsync(Guid ownerUserUid)
+Task<Contact>              CreateAsync(Guid ownerUserUid, string name, List<string>? tags = null)
+Task                       UpdateAsync(Contact contact)
+Task                       DeleteAsync(Guid uid)
+
+// Email addresses
+Task<EmailAddress>  AddEmailAddressAsync(Guid contactUid, string email, EmailType type, bool isPrimary = false, List<string>? tags = null)
+Task                UpdateEmailAddressAsync(EmailAddress emailAddress)
+Task                DeleteEmailAddressAsync(Guid emailAddressUid)
+
+// Phone numbers
+Task<PhoneNumber>  AddPhoneNumberAsync(Guid contactUid, string number, PhoneType type, bool isPrimary = false, List<string>? tags = null)
+Task               UpdatePhoneNumberAsync(PhoneNumber phoneNumber)
+Task               DeletePhoneNumberAsync(Guid phoneNumberUid)
+
+// Postal addresses
+Task<ContactAddress>  AddAddressAsync(Guid contactUid, ContactAddress address)
+Task                  UpdateAddressAsync(ContactAddress address)
+Task                  DeleteAddressAsync(Guid addressUid)
+```
+
+**Access rules:** Users may only read/modify their own contacts. Admins may read all contacts, but may only edit or delete contacts they own.
+
 ### `AuthResult.cs`
 ```csharp
 AuthResult.Success(token)   // Succeeded=true, Token set
@@ -360,7 +467,8 @@ bool IsEnabled(LogEventLevel level)
 ## `Extensions/CoreServiceExtensions.cs`
 
 ```csharp
-// Register validators, IPasswordHasher, IUserService, IAuthService, INoteService, ITagService
+// Register validators, IPasswordHasher, IUserService, IAuthService,
+// INoteService, ITagService, IContactService
 services.AddCoreServices();
 
 // Register IJwtTokenService + configure JwtOptions

@@ -28,6 +28,7 @@ public static class DataLibServiceExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<INoteRepository, NoteRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IDatabaseResetService, DatabaseResetService>();
 
         return services;
