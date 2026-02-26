@@ -1,3 +1,4 @@
+using AppSimple.Core.Logging;
 using AppSimple.Core.Models.DTOs;
 using AppSimple.Core.Models.Requests;
 using AppSimple.Core.Services;
@@ -16,11 +17,14 @@ namespace AppSimple.WebApi.Controllers;
 public sealed class ProtectedController : ControllerBase
 {
     private readonly IUserService _users;
+    private readonly IAppLogger<AuthController> _logger;
 
     /// <summary>Initializes a new instance of <see cref="ProtectedController"/>.</summary>
-    public ProtectedController(IUserService users)
+    public ProtectedController(IUserService users, IAppLogger<AuthController> logger)
     {
         _users = users;
+        _logger = logger;
+        _logger.Debug("ProtectedController initialized for user: {User}", User.Identity?.Name);
     }
 
     /// <summary>Returns a message confirming the caller is authenticated.</summary>
