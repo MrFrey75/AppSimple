@@ -83,6 +83,8 @@ if curl -sf "$BASE/api/health" >/dev/null 2>&1; then
   info "WebApi already running at $BASE — using existing instance."
 else
   info "Building WebApi..."
+  # Remove stale MSBuild cache that causes spurious build failures
+  rm -f "$SCRIPT_DIR/../src/AppSimple.Core/obj/Debug/net10.0/AppSimple.Core.AssemblyInfoInputs.cache"
   dotnet build "$PROJECT" --nologo -q || { echo -e "${RED}Build failed — aborting.${RESET}"; exit 1; }
 
   info "Starting WebApi at $BASE..."
