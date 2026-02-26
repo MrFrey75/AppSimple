@@ -80,7 +80,7 @@ Service for one-time database bootstrap. Register as a singleton (see DI section
 
 ```csharp
 void Initialize()
-// Creates the Users table if it does not exist. Safe to call on every startup.
+// Creates all tables (Users, Tags, Notes, NoteTags) if they do not exist. Safe to call on every startup.
 
 void SeedAdminUser(string hashedAdminPassword)
 // Inserts the default admin user (IsSystem=true, Role=Admin) if not already present.
@@ -90,22 +90,33 @@ void SeedAdminUser(string hashedAdminPassword)
 **Schema created:**
 
 ```sql
-CREATE TABLE IF NOT EXISTS Users (
-    Uid          TEXT NOT NULL PRIMARY KEY,
-    Username     TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    PasswordHash TEXT NOT NULL,
-    Email        TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    FirstName    TEXT,
-    LastName     TEXT,
-    PhoneNumber  TEXT,
-    DateOfBirth  TEXT,
-    Bio          TEXT,
-    AvatarUrl    TEXT,
-    Role         INTEGER NOT NULL DEFAULT 0,
-    IsActive     INTEGER NOT NULL DEFAULT 1,
-    IsSystem     INTEGER NOT NULL DEFAULT 0,
-    CreatedAt    TEXT NOT NULL,
-    UpdatedAt    TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS Users ( ... );   -- see README for full DDL
+
+CREATE TABLE IF NOT EXISTS Tags (
+    Uid         TEXT NOT NULL PRIMARY KEY,
+    UserUid     TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Name        TEXT NOT NULL COLLATE NOCASE,
+    Description TEXT,
+    Color       TEXT NOT NULL DEFAULT '#CCCCCC',
+    IsSystem    INTEGER NOT NULL DEFAULT 0,
+    CreatedAt   TEXT NOT NULL,
+    UpdatedAt   TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Notes (
+    Uid       TEXT NOT NULL PRIMARY KEY,
+    UserUid   TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Title     TEXT NOT NULL DEFAULT '',
+    Content   TEXT NOT NULL,
+    IsSystem  INTEGER NOT NULL DEFAULT 0,
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS NoteTags (
+    NoteUid TEXT NOT NULL REFERENCES Notes(Uid) ON DELETE CASCADE,
+    TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
+    PRIMARY KEY (NoteUid, TagUid)
 );
 ```
 
@@ -136,6 +147,40 @@ Implements `IUserRepository` (defined in Core) using Dapper.
 
 > **Note**: The `AND IsSystem = 0` guard in SQL is a defence-in-depth measure. The service layer (`UserService`) also checks `IsSystem` and throws `SystemEntityException` before calling the repository.
 
+### `NoteRepository.cs`
+Implements `INoteRepository` using Dapper. Tags are loaded via a second query joining on `NoteTags`.
+
+| Method | SQL notes |
+|---|---|
+| `GetByUidAsync(uid)` | SELECT from Notes + `LoadTagsAsync` |
+| `GetAllAsync()` | All notes ordered by `UpdatedAt DESC` + tags per note |
+| `GetByUserUidAsync(userUid)` | `WHERE UserUid = @UserUid` + tags per note |
+| `AddAsync(entity)` | INSERT into Notes |
+| `UpdateAsync(entity)` | UPDATE Title, Content, UpdatedAt |
+| `DeleteAsync(uid)` | DELETE from Notes (NoteTags removed by CASCADE) |
+| `AddTagAsync(noteUid, tagUid)` | `INSERT OR IGNORE INTO NoteTags` |
+| `RemoveTagAsync(noteUid, tagUid)` | DELETE from NoteTags |
+
+**`LoadTagsAsync` helper** — joins `Tags` through `NoteTags` for a single note:
+```sql
+SELECT t.* FROM Tags t
+INNER JOIN NoteTags nt ON t.Uid = nt.TagUid
+WHERE nt.NoteUid = @NoteUid
+```
+
+### `TagRepository.cs`
+Implements `ITagRepository` using Dapper.
+
+| Method | SQL notes |
+|---|---|
+| `GetByUidAsync(uid)` | `WHERE Uid = @Uid` |
+| `GetAllAsync()` | All tags ordered by Name |
+| `GetByUserUidAsync(userUid)` | `WHERE UserUid = @UserUid ORDER BY Name` |
+| `GetByNameAsync(userUid, name)` | `WHERE UserUid = @UserUid AND Name = @Name COLLATE NOCASE` |
+| `AddAsync(entity)` | Full INSERT |
+| `UpdateAsync(entity)` | UPDATE Name, Description, Color, UpdatedAt |
+| `DeleteAsync(uid)` | DELETE from Tags — NoteTags rows removed by `ON DELETE CASCADE` |
+
 ---
 
 ## `Extensions/DataLibServiceExtensions.cs`
@@ -152,6 +197,9 @@ Registers:
 | `IDbConnectionFactory` → `SqliteConnectionFactory` | Singleton |
 | `DbInitializer` | Singleton |
 | `IUserRepository` → `UserRepository` | Scoped |
+| `INoteRepository` → `NoteRepository` | Scoped |
+| `ITagRepository` → `TagRepository` | Scoped |
+| `IDatabaseResetService` → `DatabaseResetService` | Scoped |
 
 Also calls `DapperConfig.Register()` exactly once.
 

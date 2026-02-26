@@ -56,6 +56,26 @@ Concrete entity representing an application user.
 | `IsActive` | `bool` | — | Defaults to `true` |
 | `FullName` | `string?` | — | **Computed** — `$"{FirstName} {LastName}".Trim()`, null if both empty |
 
+### `Note.cs`
+Entity representing a user-owned note.
+
+| Property | Type | Required | Notes |
+|---|---|---|---|
+| `Title` | `string` | — | Defaults to empty string |
+| `Content` | `string` | ✓ | Body text of the note |
+| `UserUid` | `Guid` | ✓ | FK → owning user |
+| `Tags` | `List<Tag>` | — | Populated by repository; not persisted directly |
+
+### `Tag.cs`
+Entity representing a user-defined label attachable to notes.
+
+| Property | Type | Required | Notes |
+|---|---|---|---|
+| `Name` | `string` | ✓ | Unique per user (case-insensitive) |
+| `Description` | `string?` | — | Optional description |
+| `UserUid` | `Guid` | ✓ | FK → owning user |
+| `Color` | `string?` | — | Hex color string, defaults to `#CCCCCC` |
+
 ### `Models/Requests/`
 
 | Class | Used by | Key fields |
@@ -63,6 +83,18 @@ Concrete entity representing an application user.
 | `CreateUserRequest` | `IUserService.CreateAsync` callers | Username, Email, Password, optional FirstName/LastName |
 | `UpdateUserRequest` | `IUserService.UpdateAsync` callers | All-optional profile fields |
 | `ChangePasswordRequest` | `IUserService.ChangePasswordAsync` callers | CurrentPassword, NewPassword, ConfirmNewPassword |
+| `CreateNoteRequest` | `INoteService.CreateAsync` callers | Title (optional), Content (required), TagUids list |
+| `UpdateNoteRequest` | `INoteService.UpdateAsync` callers | Title?, Content? — null means no change |
+| `CreateTagRequest` | `ITagService.CreateAsync` callers | Name (required), Description?, Color? |
+| `UpdateTagRequest` | `ITagService.UpdateAsync` callers | Name?, Description?, Color? — null means no change |
+
+### `Models/DTOs/`
+
+| Class | Source entity | Notes |
+|---|---|---|
+| `UserDto` | `User` | Uid, Username, Email, profile fields, Role enum, IsActive, CreatedAt. `UserDto.From(user)` static mapper. |
+| `NoteDto` | `Note` | Uid, Title, Content, UserUid, Tags (as `IReadOnlyList<TagDto>`), CreatedAt, UpdatedAt. `NoteDto.From(note)` static mapper. |
+| `TagDto` | `Tag` | Uid, Name, Description, UserUid, Color, CreatedAt. `TagDto.From(tag)` static mapper. |
 
 ---
 
@@ -122,6 +154,23 @@ Task<User?>  GetByUsernameAsync(string username)   // case-insensitive
 Task<User?>  GetByEmailAsync(string email)          // case-insensitive
 Task<bool>   UsernameExistsAsync(string username)
 Task<bool>   EmailExistsAsync(string email)
+```
+
+### `INoteRepository.cs`
+Extends `IRepository<Note>` with note-specific operations.
+
+```csharp
+Task<IEnumerable<Note>>  GetByUserUidAsync(Guid userUid)         // returns notes with tags populated
+Task                     AddTagAsync(Guid noteUid, Guid tagUid)  // insert into NoteTags
+Task                     RemoveTagAsync(Guid noteUid, Guid tagUid)
+```
+
+### `ITagRepository.cs`
+Extends `IRepository<Tag>` with tag-specific lookups.
+
+```csharp
+Task<IEnumerable<Tag>>  GetByUserUidAsync(Guid userUid)
+Task<Tag?>              GetByNameAsync(Guid userUid, string name)  // case-insensitive
 ```
 
 ---
@@ -222,6 +271,32 @@ Task<AuthResult> LoginAsync(string username, string plainPassword)
 string?          ValidateToken(string token)
 ```
 
+### `INoteService.cs`
+```csharp
+Task<Note?>             GetByUidAsync(Guid uid)
+Task<IEnumerable<Note>> GetAllAsync()                                 // admin use
+Task<IEnumerable<Note>> GetByUserUidAsync(Guid userUid)
+Task<Note>              CreateAsync(Guid userUid, string title, string content)
+Task                    UpdateAsync(Note note)
+Task                    DeleteAsync(Guid uid)
+Task                    AddTagAsync(Guid noteUid, Guid tagUid)
+Task                    RemoveTagAsync(Guid noteUid, Guid tagUid)
+```
+
+**Access rules:** Users may only read/modify their own notes. Admins may read all notes, but may only edit or delete notes they own.
+
+### `ITagService.cs`
+```csharp
+Task<Tag?>             GetByUidAsync(Guid uid)
+Task<IEnumerable<Tag>> GetAllAsync()                                  // admin use
+Task<IEnumerable<Tag>> GetByUserUidAsync(Guid userUid)
+Task<Tag>              CreateAsync(Guid userUid, string name, string? description = null, string? color = null)
+Task                   UpdateAsync(Tag tag)
+Task                   DeleteAsync(Guid uid)
+```
+
+**Access rules:** Tags are user-specific. Admins may read all tags, but may only edit or delete their own.
+
 ### `AuthResult.cs`
 ```csharp
 AuthResult.Success(token)   // Succeeded=true, Token set
@@ -285,7 +360,7 @@ bool IsEnabled(LogEventLevel level)
 ## `Extensions/CoreServiceExtensions.cs`
 
 ```csharp
-// Register validators, IPasswordHasher, IUserService, IAuthService
+// Register validators, IPasswordHasher, IUserService, IAuthService, INoteService, ITagService
 services.AddCoreServices();
 
 // Register IJwtTokenService + configure JwtOptions
