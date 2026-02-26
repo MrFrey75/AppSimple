@@ -1,6 +1,7 @@
 using AppSimple.Core.Config;
 using AppSimple.Core.Config.Impl;
 using AppSimple.Core.Constants;
+using AppSimple.Core.Extensions;
 using AppSimple.Core.Logging;
 using AppSimple.WebApp.Services;
 using AppSimple.WebApp.Services.Impl;
@@ -17,17 +18,6 @@ public static class WebAppServiceExtensions
     {
         var config = builder.Configuration;
 
-        builder.Host.UseSerilog((ctx, lc) =>
-        {
-            var logDir     = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
-            var enableFile = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
-            lc.MinimumLevel.Information()
-              .Enrich.FromLogContext();
-            if (enableFile)
-                lc.WriteTo.File(Path.Combine(logDir, "webapp-.log"), rollingInterval: Serilog.RollingInterval.Day);
-            lc.WriteTo.Console();
-        });
-
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(opts =>
             {
@@ -37,6 +27,13 @@ public static class WebAppServiceExtensions
                 opts.ExpireTimeSpan = TimeSpan.FromHours(8);
                 opts.SlidingExpiration = true;
             });
+
+        builder.Services.AddAppLogging(opts =>
+        {
+            opts.EnableFile   = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
+            opts.LogDirectory = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
+            opts.ApplicationName = "AppSimple.WebApp";
+        });
 
         builder.Services.AddAuthorization();
 
