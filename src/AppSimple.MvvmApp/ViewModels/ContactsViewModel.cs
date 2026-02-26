@@ -28,21 +28,29 @@ public partial class ContactsViewModel : BaseViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedContact))]
     [NotifyPropertyChangedFor(nameof(IsDetailVisible))]
+    [NotifyCanExecuteChangedFor(nameof(EditSelectedContactCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectedContactCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddEmailCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddPhoneCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddAddressCommand))]
     private Contact? _selectedContact;
 
     /// <summary>Gets or sets the email address currently selected in the detail panel.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedEmail))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteEmailCommand))]
     private EmailAddress? _selectedEmail;
 
     /// <summary>Gets or sets the phone number currently selected in the detail panel.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedPhone))]
+    [NotifyCanExecuteChangedFor(nameof(DeletePhoneCommand))]
     private PhoneNumber? _selectedPhone;
 
     /// <summary>Gets or sets the address currently selected in the detail panel.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedAddress))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteAddressCommand))]
     private ContactAddress? _selectedAddress;
 
     // ─── Contact form ─────────────────────────────────────────────────────

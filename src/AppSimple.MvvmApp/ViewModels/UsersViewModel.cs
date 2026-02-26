@@ -27,6 +27,8 @@ public partial class UsersViewModel : BaseViewModel
     /// <summary>Gets or sets the user currently selected in the DataGrid.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedUser))]
+    [NotifyCanExecuteChangedFor(nameof(EditSelectedUserCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectedUserCommand))]
     private User? _selectedUser;
 
     /// <summary>Gets or sets the current form mode (None / Create / Edit).</summary>

@@ -35,6 +35,9 @@ public partial class NotesViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(HasSelectedNote))]
     [NotifyPropertyChangedFor(nameof(IsDetailVisible))]
     [NotifyPropertyChangedFor(nameof(SelectedNoteTagsText))]
+    [NotifyCanExecuteChangedFor(nameof(EditSelectedNoteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteSelectedNoteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(AddTagToNoteCommand))]
     private Note? _selectedNote;
 
     partial void OnSelectedNoteChanged(Note? value)
@@ -48,6 +51,7 @@ public partial class NotesViewModel : BaseViewModel
     /// <summary>Gets or sets the tag currently selected in the "remove tag" list.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedNoteTag))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveTagFromNoteCommand))]
     private Tag? _selectedNoteTag;
 
     /// <summary>Gets or sets the tag selected in the "add tag" combo box.</summary>
