@@ -22,6 +22,7 @@ public sealed class MainMenu
         _systemMenu = systemMenu;
         _session    = session;
         _logger     = logger;
+        _logger.Debug("MainMenu initialized") ;
     }
 
     /// <summary>Displays the main menu and loops until the admin logs out.</summary>

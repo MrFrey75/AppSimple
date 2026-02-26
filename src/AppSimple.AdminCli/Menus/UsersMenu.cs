@@ -24,6 +24,7 @@ public sealed class UsersMenu
         _api     = api;
         _session = session;
         _logger  = logger;
+        _logger.Debug("UsersMenu initialized") ;
     }
 
     /// <summary>Displays the user management menu and loops until Back is selected.</summary>

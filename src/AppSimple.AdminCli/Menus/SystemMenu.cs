@@ -26,6 +26,7 @@ public sealed class SystemMenu
         _session      = session;
         _resetService = resetService;
         _logger       = logger;
+        _logger.Debug("SystemMenu initialized") ;
     }
 
     /// <summary>Displays the system menu and loops until Back is selected.</summary>

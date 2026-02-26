@@ -20,6 +20,7 @@ public sealed class ApiClient : ApiClientBase, IApiClient
     public ApiClient(HttpClient http, IAppLogger<ApiClient> logger) : base(http)
     {
         _logger = logger;
+        _logger.Debug("ApiClient initialized") ;
     }
 
     // ── Override base methods to add resilient try-catch ─────────────────────

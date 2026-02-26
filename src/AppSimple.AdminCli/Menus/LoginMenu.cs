@@ -21,6 +21,7 @@ public sealed class LoginMenu
         _api     = api;
         _session = session;
         _logger  = logger;
+        _logger.Debug("LoginMenu initialized") ;
     }
 
     /// <summary>
