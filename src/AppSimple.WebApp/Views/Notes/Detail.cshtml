@@ -1,0 +1,79 @@
+@model NoteDetailViewModel
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model.Note.Title) ? "Note" : Model.Note.Title;
+    var attachedUids = Model.Note.Tags.Select(t => t.Uid).ToHashSet();
+    var availableTags = Model.AllTags.Where(t => !attachedUids.Contains(t.Uid)).ToList();
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">@(string.IsNullOrEmpty(Model.Note.Title) ? "(untitled)" : Model.Note.Title)</div>
+        <div class="page-subtitle">Updated @Model.Note.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <a asp-controller="Notes" asp-action="Edit" asp-route-uid="@Model.Note.Uid" class="btn btn-secondary">Edit</a>
+        <form asp-controller="Notes" asp-action="Delete" asp-route-uid="@Model.Note.Uid" method="post"
+              onsubmit="return confirm('Delete this note?')">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <a asp-controller="Notes" asp-action="Index" class="btn btn-secondary">← Notes</a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="white-space:pre-wrap;line-height:1.7;">@Model.Note.Content</div>
+</div>
+
+<div class="card">
+    <div class="card-title" style="font-size:1rem;margin-bottom:0.75rem;">🏷 Tags</div>
+
+    @if (Model.Note.Tags.Count > 0)
+    {
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+            @foreach (var tag in Model.Note.Tags)
+            {
+                <div style="display:flex;align-items:center;gap:0.3rem;background:@(tag.Color ?? "#CCCCCC")22;
+                            border:1px solid @(tag.Color ?? "#CCCCCC");border-radius:6px;padding:0.25rem 0.6rem;">
+                    <span style="font-size:0.85rem;color:var(--text);">@tag.Name</span>
+                    <form asp-controller="Notes" asp-action="RemoveTag"
+                          asp-route-noteUid="@Model.Note.Uid" asp-route-tagUid="@tag.Uid" method="post" style="margin:0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--red);
+                                font-size:0.8rem;padding:0;line-height:1;" title="Remove tag">✕</button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="color:var(--subtext);font-size:0.85rem;margin-bottom:1rem;">No tags on this note.</p>
+    }
+
+    @if (availableTags.Count > 0)
+    {
+        <form asp-controller="Notes" asp-action="AddTag"
+              asp-route-noteUid="@Model.Note.Uid" asp-route-tagUid="placeholder" method="post"
+              id="addTagForm" style="display:flex;gap:0.5rem;align-items:center;">
+            @Html.AntiForgeryToken()
+            <select name="tagUid" id="tagUid" class="form-control" style="max-width:250px;">
+                @foreach (var tag in availableTags)
+                {
+                    <option value="@tag.Uid">@tag.Name</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-secondary btn-sm">+ Add Tag</button>
+        </form>
+        <script>
+            document.getElementById('addTagForm').addEventListener('submit', function(e) {
+                var tagUid = document.getElementById('tagUid').value;
+                this.action = this.action.replace('placeholder', tagUid);
+            });
+        </script>
+    }
+    else if (Model.AllTags.Count == 0)
+    {
+        <a asp-controller="Notes" asp-action="CreateTag" class="btn btn-secondary btn-sm">Create a tag first</a>
+    }
+</div>

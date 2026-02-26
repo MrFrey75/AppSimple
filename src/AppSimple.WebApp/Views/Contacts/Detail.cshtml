@@ -1,0 +1,149 @@
+@model ContactDetailViewModel
+@{
+    ViewData["Title"] = Model.Contact.Name;
+    var c = Model.Contact;
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">📇 @c.Name</div>
+        <div class="page-subtitle">Added @c.CreatedAt.ToString("yyyy-MM-dd")</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <a asp-controller="Contacts" asp-action="Edit" asp-route-uid="@c.Uid" class="btn btn-secondary">Edit Name</a>
+        <form asp-controller="Contacts" asp-action="Delete" asp-route-uid="@c.Uid" method="post"
+              onsubmit="return confirm('Delete @c.Name and all their details?')">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <a asp-controller="Contacts" asp-action="Index" class="btn btn-secondary">← Contacts</a>
+    </div>
+</div>
+
+@* Email Addresses *@
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div class="card-title" style="font-size:1rem;margin:0;">📧 Email Addresses</div>
+        <a asp-controller="Contacts" asp-action="AddEmail" asp-route-contactUid="@c.Uid"
+           class="btn btn-secondary btn-sm">+ Add</a>
+    </div>
+    @if (c.EmailAddresses.Count == 0)
+    {
+        <p style="color:var(--subtext);font-size:0.9rem;">No email addresses.</p>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Email</th><th>Type</th><th>Primary</th><th>Actions</th></tr></thead>
+            <tbody>
+                @foreach (var e in c.EmailAddresses)
+                {
+                    <tr>
+                        <td>@e.Email</td>
+                        <td style="color:var(--subtext);">@e.Type</td>
+                        <td>@(e.IsPrimary ? "★" : "")</td>
+                        <td>
+                            <div style="display:flex;gap:0.4rem;">
+                                <a asp-controller="Contacts" asp-action="EditEmail"
+                                   asp-route-contactUid="@c.Uid" asp-route-emailUid="@e.Uid"
+                                   class="btn btn-secondary btn-sm">Edit</a>
+                                <form asp-controller="Contacts" asp-action="DeleteEmail"
+                                      asp-route-contactUid="@c.Uid" asp-route-emailUid="@e.Uid"
+                                      method="post" onsubmit="return confirm('Delete @e.Email?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@* Phone Numbers *@
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div class="card-title" style="font-size:1rem;margin:0;">📞 Phone Numbers</div>
+        <a asp-controller="Contacts" asp-action="AddPhone" asp-route-contactUid="@c.Uid"
+           class="btn btn-secondary btn-sm">+ Add</a>
+    </div>
+    @if (c.PhoneNumbers.Count == 0)
+    {
+        <p style="color:var(--subtext);font-size:0.9rem;">No phone numbers.</p>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Number</th><th>Type</th><th>Primary</th><th>Actions</th></tr></thead>
+            <tbody>
+                @foreach (var p in c.PhoneNumbers)
+                {
+                    <tr>
+                        <td>@p.Number</td>
+                        <td style="color:var(--subtext);">@p.Type</td>
+                        <td>@(p.IsPrimary ? "★" : "")</td>
+                        <td>
+                            <div style="display:flex;gap:0.4rem;">
+                                <a asp-controller="Contacts" asp-action="EditPhone"
+                                   asp-route-contactUid="@c.Uid" asp-route-phoneUid="@p.Uid"
+                                   class="btn btn-secondary btn-sm">Edit</a>
+                                <form asp-controller="Contacts" asp-action="DeletePhone"
+                                      asp-route-contactUid="@c.Uid" asp-route-phoneUid="@p.Uid"
+                                      method="post" onsubmit="return confirm('Delete @p.Number?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@* Addresses *@
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div class="card-title" style="font-size:1rem;margin:0;">🏠 Addresses</div>
+        <a asp-controller="Contacts" asp-action="AddAddress" asp-route-contactUid="@c.Uid"
+           class="btn btn-secondary btn-sm">+ Add</a>
+    </div>
+    @if (c.Addresses.Count == 0)
+    {
+        <p style="color:var(--subtext);font-size:0.9rem;">No addresses.</p>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Street</th><th>City</th><th>Country</th><th>Type</th><th>Primary</th><th>Actions</th></tr></thead>
+            <tbody>
+                @foreach (var a in c.Addresses)
+                {
+                    <tr>
+                        <td>@a.Street</td>
+                        <td>@a.City@(string.IsNullOrEmpty(a.State) ? "" : $", {a.State}")</td>
+                        <td>@a.Country</td>
+                        <td style="color:var(--subtext);">@a.Type</td>
+                        <td>@(a.IsPrimary ? "★" : "")</td>
+                        <td>
+                            <div style="display:flex;gap:0.4rem;">
+                                <a asp-controller="Contacts" asp-action="EditAddress"
+                                   asp-route-contactUid="@c.Uid" asp-route-addressUid="@a.Uid"
+                                   class="btn btn-secondary btn-sm">Edit</a>
+                                <form asp-controller="Contacts" asp-action="DeleteAddress"
+                                      asp-route-contactUid="@c.Uid" asp-route-addressUid="@a.Uid"
+                                      method="post" onsubmit="return confirm('Delete this address?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

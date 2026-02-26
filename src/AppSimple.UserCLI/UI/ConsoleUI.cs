@@ -286,6 +286,124 @@ public static class ConsoleUI
         Console.WriteLine();
     }
 
+    /// <summary>Displays a table of notes.</summary>
+    public static void WriteNoteTable(IEnumerable<Note> notes)
+    {
+        var list = notes.ToList();
+        string header = $"  {"#",-4} {"Title",-30} {"Tags",-20} {"Updated",-12}";
+        WriteColor(header, ConsoleColor.DarkCyan);
+        WriteColor("  " + new string('─', header.Length - 2), ConsoleColor.DarkGray);
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            var n = list[i];
+            string title = string.IsNullOrEmpty(n.Title) ? "(untitled)" : n.Title;
+            if (title.Length > 29) title = title[..26] + "...";
+            string tags = n.Tags.Count == 0 ? "—" : string.Join(", ", n.Tags.Select(t => t.Name));
+            if (tags.Length > 19) tags = tags[..16] + "...";
+            WriteColor($"  {i + 1,-4} {title,-30} {tags,-20} {n.UpdatedAt:yyyy-MM-dd}", ConsoleColor.White);
+        }
+        Console.WriteLine();
+    }
+
+    /// <summary>Displays the full detail of a single note.</summary>
+    public static void WriteNoteDetail(Note note)
+    {
+        void Row(string label, string? value)
+        {
+            Console.Write("  ");
+            WriteColor($"{label,-14}", ConsoleColor.DarkCyan, newLine: false);
+            WriteColor(value ?? "—", ConsoleColor.White);
+        }
+        WriteSeparator();
+        Row("Title",   string.IsNullOrEmpty(note.Title) ? "(untitled)" : note.Title);
+        Row("Tags",    note.Tags.Count == 0 ? "—" : string.Join(", ", note.Tags.Select(t => t.Name)));
+        Row("Updated", note.UpdatedAt.ToString("yyyy-MM-dd HH:mm"));
+        WriteSeparator();
+        Console.WriteLine();
+        WriteColor("  " + note.Content, ConsoleColor.White);
+        Console.WriteLine();
+    }
+
+    /// <summary>Displays a table of tags.</summary>
+    public static void WriteTagTable(IEnumerable<Tag> tags)
+    {
+        var list = tags.ToList();
+        string header = $"  {"#",-4} {"Name",-20} {"Color",-10} {"Description",-30}";
+        WriteColor(header, ConsoleColor.DarkCyan);
+        WriteColor("  " + new string('─', header.Length - 2), ConsoleColor.DarkGray);
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            var t = list[i];
+            string desc = t.Description ?? "";
+            if (desc.Length > 29) desc = desc[..26] + "...";
+            WriteColor($"  {i + 1,-4} {t.Name,-20} {t.Color ?? "",-10} {desc}", ConsoleColor.White);
+        }
+        Console.WriteLine();
+    }
+
+    /// <summary>Displays a table of contacts.</summary>
+    public static void WriteContactTable(IEnumerable<Contact> contacts)
+    {
+        var list = contacts.ToList();
+        string header = $"  {"#",-4} {"Name",-28} {"Primary Email",-30} {"Primary Phone",-18}";
+        WriteColor(header, ConsoleColor.DarkCyan);
+        WriteColor("  " + new string('─', header.Length - 2), ConsoleColor.DarkGray);
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            var c = list[i];
+            string email = c.EmailAddresses.FirstOrDefault(e => e.IsPrimary)?.Email
+                        ?? c.EmailAddresses.FirstOrDefault()?.Email ?? "—";
+            string phone = c.PhoneNumbers.FirstOrDefault(p => p.IsPrimary)?.Number
+                        ?? c.PhoneNumbers.FirstOrDefault()?.Number ?? "—";
+            if (email.Length > 29) email = email[..26] + "...";
+            WriteColor($"  {i + 1,-4} {c.Name,-28} {email,-30} {phone}", ConsoleColor.White);
+        }
+        Console.WriteLine();
+    }
+
+    /// <summary>Displays the full detail of a single contact.</summary>
+    public static void WriteContactDetail(Contact contact)
+    {
+        void Row(string label, string? value)
+        {
+            Console.Write("  ");
+            WriteColor($"{label,-16}", ConsoleColor.DarkCyan, newLine: false);
+            WriteColor(value ?? "—", ConsoleColor.White);
+        }
+        WriteSeparator();
+        Row("Name", contact.Name);
+
+        if (contact.EmailAddresses.Count > 0)
+        {
+            foreach (var e in contact.EmailAddresses)
+                Row(e.IsPrimary ? "Email ★" : "Email", $"{e.Email}  [{e.Type}]");
+        }
+
+        if (contact.PhoneNumbers.Count > 0)
+        {
+            foreach (var p in contact.PhoneNumbers)
+                Row(p.IsPrimary ? "Phone ★" : "Phone", $"{p.Number}  [{p.Type}]");
+        }
+
+        if (contact.Addresses.Count > 0)
+        {
+            foreach (var a in contact.Addresses)
+            {
+                string addr = $"{a.Street}, {a.City}";
+                if (!string.IsNullOrEmpty(a.State))      addr += $", {a.State}";
+                if (!string.IsNullOrEmpty(a.PostalCode)) addr += $" {a.PostalCode}";
+                addr += $", {a.Country}  [{a.Type}]";
+                Row(a.IsPrimary ? "Address ★" : "Address", addr);
+            }
+        }
+
+        WriteSeparator();
+        Console.WriteLine();
+    }
+
     // ─── Private helpers ───────────────────────────────────────────────────
 
     private static void WriteColor(string text, ConsoleColor color, bool newLine = true)

@@ -44,6 +44,8 @@ services.AddDataLibServices(
 services.AddSingleton<UserSession>();
 services.AddTransient<ProfileMenu>();
 services.AddTransient<AdminMenu>();
+services.AddTransient<NotesMenu>();
+services.AddTransient<ContactsMenu>();
 services.AddTransient<MainMenu>();
 services.AddTransient<LoginMenu>();
 services.AddTransient<App>();

@@ -1,0 +1,65 @@
+@model TagListViewModel
+@{
+    ViewData["Title"] = "My Tags";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">🏷 My Tags</div>
+        <div class="page-subtitle">@Model.Tags.Count tag@(Model.Tags.Count == 1 ? "" : "s")</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <a asp-controller="Notes" asp-action="Index" class="btn btn-secondary">← Notes</a>
+        <a asp-controller="Notes" asp-action="CreateTag" class="btn btn-primary">+ New Tag</a>
+    </div>
+</div>
+
+@if (Model.Tags.Count == 0)
+{
+    <div class="card" style="text-align:center;padding:3rem;">
+        <p style="color:var(--subtext);margin-bottom:1rem;">You have no tags yet.</p>
+        <a asp-controller="Notes" asp-action="CreateTag" class="btn btn-primary">Create your first tag</a>
+    </div>
+}
+else
+{
+    <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tag in Model.Tags)
+                {
+                    <tr>
+                        <td>
+                            <span style="display:inline-block;width:18px;height:18px;border-radius:4px;
+                                         background:@(tag.Color ?? "#CCCCCC");vertical-align:middle;"></span>
+                            <span style="font-size:0.8rem;color:var(--subtext);margin-left:0.4rem;">@(tag.Color ?? "")</span>
+                        </td>
+                        <td style="font-weight:500;">@tag.Name</td>
+                        <td style="color:var(--subtext);">@(tag.Description ?? "—")</td>
+                        <td style="color:var(--subtext);font-size:0.85rem;">@tag.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            <div style="display:flex;gap:0.4rem;">
+                                <a asp-controller="Notes" asp-action="EditTag" asp-route-uid="@tag.Uid"
+                                   class="btn btn-secondary btn-sm">Edit</a>
+                                <form asp-controller="Notes" asp-action="DeleteTag" asp-route-uid="@tag.Uid"
+                                      method="post" onsubmit="return confirm('Delete tag @tag.Name?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

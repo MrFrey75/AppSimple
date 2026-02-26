@@ -79,6 +79,8 @@
         @if (User.Identity?.IsAuthenticated == true)
         {
             <a asp-controller="Profile" asp-action="Index">👤 Profile</a>
+            <a asp-controller="Notes" asp-action="Index">📝 Notes</a>
+            <a asp-controller="Contacts" asp-action="Index">📇 Contacts</a>
         }
         @if (User.IsInRole("Admin"))
         {

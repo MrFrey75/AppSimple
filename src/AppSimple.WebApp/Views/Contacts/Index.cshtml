@@ -1,0 +1,61 @@
+@model ContactListViewModel
+@{
+    ViewData["Title"] = "My Contacts";
+}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">📇 My Contacts</div>
+        <div class="page-subtitle">@Model.Contacts.Count contact@(Model.Contacts.Count == 1 ? "" : "s")</div>
+    </div>
+    <a asp-controller="Contacts" asp-action="Create" class="btn btn-primary">+ New Contact</a>
+</div>
+
+@if (Model.Contacts.Count == 0)
+{
+    <div class="card" style="text-align:center;padding:3rem;">
+        <p style="color:var(--subtext);margin-bottom:1rem;">You have no contacts yet.</p>
+        <a asp-controller="Contacts" asp-action="Create" class="btn btn-primary">Add your first contact</a>
+    </div>
+}
+else
+{
+    <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Primary Email</th>
+                    <th>Primary Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Contacts)
+                {
+                    var primaryEmail = c.EmailAddresses.FirstOrDefault(e => e.IsPrimary) ?? c.EmailAddresses.FirstOrDefault();
+                    var primaryPhone = c.PhoneNumbers.FirstOrDefault(p => p.IsPrimary) ?? c.PhoneNumbers.FirstOrDefault();
+                    <tr>
+                        <td>
+                            <a asp-controller="Contacts" asp-action="Detail" asp-route-uid="@c.Uid"
+                               style="font-weight:500;">@c.Name</a>
+                        </td>
+                        <td style="color:var(--subtext);">@(primaryEmail?.Email ?? "—")</td>
+                        <td style="color:var(--subtext);">@(primaryPhone?.Number ?? "—")</td>
+                        <td>
+                            <div style="display:flex;gap:0.4rem;">
+                                <a asp-controller="Contacts" asp-action="Detail" asp-route-uid="@c.Uid"
+                                   class="btn btn-secondary btn-sm">View</a>
+                                <form asp-controller="Contacts" asp-action="Delete" asp-route-uid="@c.Uid"
+                                      method="post" onsubmit="return confirm('Delete @c.Name?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
