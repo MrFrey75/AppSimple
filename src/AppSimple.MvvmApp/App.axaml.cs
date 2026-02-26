@@ -35,6 +35,7 @@ public partial class App : Application
         {
             opts.EnableFile    = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
             opts.LogDirectory  = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
+            opts.ApplicationName = "AppSimple.MvvmApp";
         });
         services.AddCoreServices();
         services.AddJwtAuthentication(opts =>

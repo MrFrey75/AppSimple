@@ -29,6 +29,7 @@ public static class WebApiServiceExtensions
         {
             opts.EnableFile   = config.GetValue(AppConstants.ConfigLoggingEnableFile, true);
             opts.LogDirectory = LogPath.Resolve(config[AppConstants.ConfigLoggingDirectory]);
+            opts.ApplicationName = "AppSimple.WebApi";
         });
 
         // Wire Serilog into ASP.NET Core's ILogger<T> pipeline (e.g. ExceptionMiddleware)

@@ -23,6 +23,7 @@ public sealed class AuthController : ControllerBase
         _auth   = auth;
         _users  = users;
         _logger = logger;
+        _logger.Debug("AuthController initialized for user: {User}", User.Identity?.Name);
     }
 
     /// <summary>

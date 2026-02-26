@@ -25,6 +25,7 @@ public sealed class AdminController : ControllerBase
     {
         _users  = users;
         _logger = logger;
+        _logger.Debug("AdminController initialized for user: {User}", User.Identity?.Name);
     }
 
     /// <summary>Returns a message confirming the caller has admin access.</summary>
