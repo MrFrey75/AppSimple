@@ -1,8 +1,40 @@
 #!/usr/bin/env bash
 # ============================================================
 # AppSimple WebApi — curl smoke-test script
-# Usage: ./scripts/test-webapi.sh [base_url]
-# Default base URL: http://localhost:5157
+#
+# USAGE
+#   ./scripts/test-webapi.sh [base_url]
+#
+# ARGUMENTS
+#   base_url   Optional. Base URL of the running WebApi.
+#              Defaults to http://localhost:5157
+#
+# EXAMPLES
+#   ./scripts/test-webapi.sh
+#   ./scripts/test-webapi.sh https://localhost:7095
+#   ./scripts/test-webapi.sh http://myserver:8080
+#
+# PREREQUISITES
+#   • curl must be installed
+#   • AppSimple.WebApi must be running and reachable at base_url
+#     Start with: dotnet run --project src/AppSimple.WebApi
+#   • Default admin credentials must be seeded (admin / Admin123!)
+#
+# WHAT IT TESTS
+#   Public     — /api, /api/public, /api/health
+#   Auth       — login (good + bad creds), token validate (good + bad)
+#   Protected  — authenticated access, GET/PUT /me, change-password
+#   Admin      — list users, create, get by UID, update, set role, delete
+#
+# OUTPUT
+#   ✓  green  — check passed
+#   ✗  red    — check failed (shows expected vs actual)
+#
+# NOTES
+#   • A temporary test user (testuser_curl) is created and deleted
+#     automatically during the Admin tests.
+#   • The script exits early with a non-zero code if login fails,
+#     since all remaining tests depend on a valid JWT token.
 # ============================================================
 
 BASE="${1:-http://localhost:5157}"
