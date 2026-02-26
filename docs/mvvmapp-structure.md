@@ -42,11 +42,15 @@ AppSimple.MvvmApp/
 │   ├── HomeViewModel.cs            Landing page — IsLoggedIn, WelcomeText, Refresh()
 │   ├── ProfileViewModel.cs         Own-profile view/edit + ChangePasswordCommand
 │   ├── UsersViewModel.cs           Admin user management — ObservableCollection, CRUD
+│   ├── NotesViewModel.cs           Notes list + inline CRUD + tag management
+│   ├── ContactsViewModel.cs        Contacts list + child entity management (emails/phones/addresses)
 │   └── MainWindowViewModel.cs      Navigation + login/logout + LoginCommand (bound)
 ├── Views/
 │   ├── HomeView.axaml / .axaml.cs  Public landing page
 │   ├── ProfileView.axaml / .cs     Profile form — password fields bind directly (no code-behind)
-│   └── UsersView.axaml / .cs       DataGrid + right-panel form — password field bound via MVVM
+│   ├── UsersView.axaml / .cs       DataGrid + right-panel form — password field bound via MVVM
+│   ├── NotesView.axaml / .cs       Notes list + create/edit form + tag management panel
+│   └── ContactsView.axaml / .cs    Contacts list + detail/edit panel with email/phone/address cards
 └── Controls/
     ├── NavBar.axaml                Top navigation bar UserControl
     └── NavBar.axaml.cs             Code-behind — Enter-key handling only
@@ -64,10 +68,13 @@ AppSimple.MvvmApp/
 ├─────────────┬───────────────────────────────────────────────────────────┤
 │  Left       │  ContentControl — current page (swaps via DataTemplate)   │
 │  Sidebar    │  ┌──────────────────────────────────────────────────────┐ │
-│  (logged-in │  │  HomeView / ProfileView / UsersView                  │ │
-│   only)     │  └──────────────────────────────────────────────────────┘ │
+│  (logged-in │  │  HomeView / ProfileView / NotesView /                │ │
+│   only)     │  │  ContactsView / UsersView                            │ │
+│             │  └──────────────────────────────────────────────────────┘ │
 │  🏠 Home    │                                                            │
 │  👤 Profile │                                                            │
+│  📝 Notes   │                                                            │
+│  📇 Contacts│                                                            │
 │  👥 Users*  │                                                            │
 └─────────────┴───────────────────────────────────────────────────────────┘
 * Users nav item visible to Admin role only
@@ -92,12 +99,14 @@ the matching `DataTemplate`:
 </Application.DataTemplates>
 ```
 
-`MainWindowViewModel` exposes three navigation RelayCommands:
+`MainWindowViewModel` exposes five navigation RelayCommands:
 
 | Command | Guard | Navigates to |
 |---|---|---|
 | `NavigateToHomeCommand` | always | `HomeViewModel` |
 | `NavigateToProfileCommand` | `IsLoggedIn` | `ProfileViewModel` (loads user) |
+| `NavigateToNotesCommand` | `IsLoggedIn` | `NotesViewModel` (loads notes) |
+| `NavigateToContactsCommand` | `IsLoggedIn` | `ContactsViewModel` (loads contacts) |
 | `NavigateToUsersCommand` | `IsAdmin` | `UsersViewModel` (loads all users) |
 
 ---
@@ -164,6 +173,34 @@ changes to the UI.
 - `CancelFormCommand` — hides right panel
 - `SaveFormCommand` — uses `FormPassword` property (bound via `TextBox PasswordChar`); dispatches to create/update depending on `FormMode`
 
+
+### `NotesViewModel`
+- `Notes` — `ObservableCollection<Note>` bound to left ListBox
+- `AllTags` — `ObservableCollection<Tag>` (all tags owned by current user)
+- `SelectedNoteTags` — `ObservableCollection<Tag>` (tags on the selected note)
+- `LoadAsync()` — reloads notes + tags for the current user
+- `ShowCreateFormCommand` — opens inline form in Create mode
+- `EditSelectedNoteCommand` — populates form from selected note
+- `DeleteSelectedNoteCommand` — deletes selected note with confirm guard
+- `SaveFormCommand` — creates or updates note depending on `FormMode`
+- `CancelFormCommand` — returns to list view
+- `AddTagToNoteCommand` / `RemoveTagFromNoteCommand` — manage note↔tag associations
+- `CreateTagCommand` — creates a new tag for the user
+- `NoteTitle` / `NoteContent` — observable properties bound to the form TextBoxes
+- `FormTitle` — computed panel header ("New Note" / "Edit Note")
+
+### `ContactsViewModel`
+- `Contacts` — `ObservableCollection<Contact>` bound to left ListBox
+- `LoadAsync()` — reloads all contacts for the current user
+- `ShowCreateFormCommand` — opens inline form in Create mode
+- `EditSelectedContactCommand` — populates form from selected contact
+- `DeleteSelectedContactCommand` — deletes selected contact
+- `SaveFormCommand` / `CancelFormCommand` — standard CRUD guards
+- `AddEmailCommand` / `AddPhoneCommand` / `AddAddressCommand` — add child entities
+- `DeleteEmailCommand` / `DeletePhoneCommand` / `DeleteAddressCommand` — remove child entities
+- `EmailTypes` / `PhoneTypes` / `AddressTypes` — frozen enum-value lists for ComboBoxes
+- `FormTitle` — computed panel header ("New Contact" / "Edit Contact")
+- `IsDetailVisible` — true when a contact is selected AND not in form mode
 ### `MainWindowViewModel`
 - Holds references to all page VMs (singletons)
 - `IsLoggedIn` / `IsAdmin` — derived from `UserSession`
@@ -218,7 +255,20 @@ services.AddDataLibServices(connStr);      // Dapper + SQLite repositories
 services.AddMvvmAppServices();             // session, ViewModels, MainWindow
 ```
 
-ViewModels are registered as singletons so navigation state (e.g. loaded user
+`AddMvvmAppServices()` registers the following singletons:
+
+| Type | Lifetime |
+|---|---|
+| `UserSession` | Singleton |
+| `HomeViewModel` | Singleton |
+| `ProfileViewModel` | Singleton |
+| `UsersViewModel` | Singleton |
+| `NotesViewModel` | Singleton |
+| `ContactsViewModel` | Singleton |
+| `MainWindowViewModel` | Singleton |
+| `MainWindow` | Transient |
+
+ViewModels are registered as singletons so navigation state (e.g. loaded note
 list) is retained when switching pages.
 
 ---
