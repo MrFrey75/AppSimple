@@ -34,9 +34,9 @@ public sealed class UserService : IUserService
     /// Initializes a new instance of <see cref="UserService"/>.
     /// </summary>
     public UserService(
-        IUserRepository userRepository,
-        ITagRepository tagRepository,
-        IPasswordHasher passwordHasher,
+        IUserRepository         userRepository,
+        ITagRepository          tagRepository,
+        IPasswordHasher         passwordHasher,
         IAppLogger<UserService> logger)
     {
         _userRepository = userRepository;
@@ -47,58 +47,100 @@ public sealed class UserService : IUserService
 
     /// <inheritdoc />
     public async Task<User?> GetByUidAsync(Guid uid)
-        => await _userRepository.GetByUidAsync(uid);
+    {
+        try
+        {
+            return await _userRepository.GetByUidAsync(uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving user {Uid}.", uid);
+            throw;
+        }
+    }
 
     /// <inheritdoc />
     public async Task<User?> GetByUsernameAsync(string username)
-        => await _userRepository.GetByUsernameAsync(username);
+    {
+        try
+        {
+            return await _userRepository.GetByUsernameAsync(username);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving user '{Username}'.", username);
+            throw;
+        }
+    }
 
     /// <inheritdoc />
     public async Task<IEnumerable<User>> GetAllAsync()
-        => await _userRepository.GetAllAsync();
+    {
+        try
+        {
+            return await _userRepository.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving all users.");
+            throw;
+        }
+    }
 
     /// <inheritdoc />
     /// <exception cref="DuplicateEntityException">Thrown if the username or email is already taken.</exception>
     public async Task<User> CreateAsync(string username, string email, string plainPassword)
     {
-        if (await _userRepository.UsernameExistsAsync(username))
-            throw new DuplicateEntityException("Username", username);
-
-        if (await _userRepository.EmailExistsAsync(email))
-            throw new DuplicateEntityException("Email", email);
-
-        var now = DateTime.UtcNow;
-        var user = new User
+        try
         {
-            Uid          = Guid.CreateVersion7(),
-            Username     = username,
-            Email        = email,
-            PasswordHash = _passwordHasher.Hash(plainPassword),
-            CreatedAt    = now,
-            UpdatedAt    = now
-        };
+            if (await _userRepository.UsernameExistsAsync(username))
+                throw new DuplicateEntityException("Username", username);
 
-        await _userRepository.AddAsync(user);
-        _logger.Information("User {Username} created with uid {Uid}.", username, user.Uid);
+            if (await _userRepository.EmailExistsAsync(email))
+                throw new DuplicateEntityException("Email", email);
 
-        // Seed default tags for the new user
-        var now2 = DateTime.UtcNow;
-        foreach (var (name, color) in _defaultTags)
-        {
-            await _tagRepository.AddAsync(new Tag
+            var now = DateTime.UtcNow;
+            var user = new User
             {
-                Uid       = Guid.CreateVersion7(),
-                UserUid   = user.Uid,
-                Name      = name,
-                Color     = color,
-                IsSystem  = true,
-                CreatedAt = now2,
-                UpdatedAt = now2,
-            });
-        }
-        _logger.Information("Default tags seeded for user {Uid}.", user.Uid);
+                Uid          = Guid.CreateVersion7(),
+                Username     = username,
+                Email        = email,
+                PasswordHash = _passwordHasher.Hash(plainPassword),
+                CreatedAt    = now,
+                UpdatedAt    = now,
+            };
 
-        return user;
+            await _userRepository.AddAsync(user);
+            _logger.Information("User '{Username}' created with uid {Uid}.", username, user.Uid);
+
+            // Seed default tags for the new user
+            var tagNow = DateTime.UtcNow;
+            foreach (var (name, color) in _defaultTags)
+            {
+                await _tagRepository.AddAsync(new Tag
+                {
+                    Uid       = Guid.CreateVersion7(),
+                    UserUid   = user.Uid,
+                    Name      = name,
+                    Color     = color,
+                    IsSystem  = true,
+                    CreatedAt = tagNow,
+                    UpdatedAt = tagNow,
+                });
+            }
+            _logger.Information("Default tags seeded for user {Uid}.", user.Uid);
+
+            return user;
+        }
+        catch (DuplicateEntityException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error creating user '{Username}'.", username);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -106,15 +148,31 @@ public sealed class UserService : IUserService
     /// <exception cref="SystemEntityException">Thrown if the user is a system entity.</exception>
     public async Task UpdateAsync(User user)
     {
-        var existing = await _userRepository.GetByUidAsync(user.Uid)
-            ?? throw new EntityNotFoundException(nameof(User), user.Uid);
+        try
+        {
+            var existing = await _userRepository.GetByUidAsync(user.Uid)
+                ?? throw new EntityNotFoundException(nameof(User), user.Uid);
 
-        if (existing.IsSystem)
-            throw new SystemEntityException(nameof(User));
+            if (existing.IsSystem)
+                throw new SystemEntityException(nameof(User));
 
-        user.UpdatedAt = DateTime.UtcNow;
-        await _userRepository.UpdateAsync(user);
-        _logger.Information("User {Uid} updated.", user.Uid);
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+            _logger.Information("User {Uid} updated.", user.Uid);
+        }
+        catch (EntityNotFoundException)
+        {
+            throw;
+        }
+        catch (SystemEntityException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error updating user {Uid}.", user.Uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -122,14 +180,30 @@ public sealed class UserService : IUserService
     /// <exception cref="SystemEntityException">Thrown if the user is a system entity.</exception>
     public async Task DeleteAsync(Guid uid)
     {
-        var existing = await _userRepository.GetByUidAsync(uid)
-            ?? throw new EntityNotFoundException(nameof(User), uid);
+        try
+        {
+            var existing = await _userRepository.GetByUidAsync(uid)
+                ?? throw new EntityNotFoundException(nameof(User), uid);
 
-        if (existing.IsSystem)
-            throw new SystemEntityException(nameof(User));
+            if (existing.IsSystem)
+                throw new SystemEntityException(nameof(User));
 
-        await _userRepository.DeleteAsync(uid);
-        _logger.Information("User {Uid} deleted.", uid);
+            await _userRepository.DeleteAsync(uid);
+            _logger.Information("User {Uid} deleted.", uid);
+        }
+        catch (EntityNotFoundException)
+        {
+            throw;
+        }
+        catch (SystemEntityException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error deleting user {Uid}.", uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -137,15 +211,31 @@ public sealed class UserService : IUserService
     /// <exception cref="UnauthorizedException">Thrown if <paramref name="currentPassword"/> is incorrect.</exception>
     public async Task ChangePasswordAsync(Guid uid, string currentPassword, string newPassword)
     {
-        var user = await _userRepository.GetByUidAsync(uid)
-            ?? throw new EntityNotFoundException(nameof(User), uid);
+        try
+        {
+            var user = await _userRepository.GetByUidAsync(uid)
+                ?? throw new EntityNotFoundException(nameof(User), uid);
 
-        if (!_passwordHasher.Verify(currentPassword, user.PasswordHash))
-            throw new UnauthorizedException("Current password is incorrect.");
+            if (!_passwordHasher.Verify(currentPassword, user.PasswordHash))
+                throw new UnauthorizedException("Current password is incorrect.");
 
-        user.PasswordHash = _passwordHasher.Hash(newPassword);
-        user.UpdatedAt    = DateTime.UtcNow;
-        await _userRepository.UpdateAsync(user);
-        _logger.Information("Password changed for user {Uid}.", uid);
+            user.PasswordHash = _passwordHasher.Hash(newPassword);
+            user.UpdatedAt    = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+            _logger.Information("Password changed for user {Uid}.", uid);
+        }
+        catch (EntityNotFoundException)
+        {
+            throw;
+        }
+        catch (UnauthorizedException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error changing password for user {Uid}.", uid);
+            throw;
+        }
     }
 }

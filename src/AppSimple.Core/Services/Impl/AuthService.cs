@@ -19,9 +19,9 @@ public sealed class AuthService : IAuthService
     /// Initializes a new instance of <see cref="AuthService"/>.
     /// </summary>
     public AuthService(
-        IUserRepository    userRepository,
-        IPasswordHasher    passwordHasher,
-        IJwtTokenService   jwtTokenService,
+        IUserRepository         userRepository,
+        IPasswordHasher         passwordHasher,
+        IJwtTokenService        jwtTokenService,
         IAppLogger<AuthService> logger)
     {
         _userRepository  = userRepository;
@@ -33,31 +33,53 @@ public sealed class AuthService : IAuthService
     /// <inheritdoc />
     public async Task<string> LoginAsync(string username, string plainPassword)
     {
-        var user = await _userRepository.GetByUsernameAsync(username);
-        if (user is null)
+        try
         {
-            _logger.Warning("Login failed — user '{Username}' not found.", username);
-            throw new UnauthorizedException("Invalid username or password.");
-        }
+            var user = await _userRepository.GetByUsernameAsync(username);
+            if (user is null)
+            {
+                _logger.Warning("Login failed — user '{Username}' not found.", username);
+                throw new UnauthorizedException("Invalid username or password.");
+            }
 
-        if (!user.IsActive)
+            if (!user.IsActive)
+            {
+                _logger.Warning("Login rejected — user '{Username}' is inactive.", username);
+                throw new UnauthorizedException("Account is disabled. Please contact an administrator.");
+            }
+
+            if (!_passwordHasher.Verify(plainPassword, user.PasswordHash))
+            {
+                _logger.Warning("Login failed — invalid password for '{Username}'.", username);
+                throw new UnauthorizedException("Invalid username or password.");
+            }
+
+            var token = _jwtTokenService.GenerateToken(user);
+            _logger.Information("User '{Username}' authenticated successfully.", username);
+            return token;
+        }
+        catch (UnauthorizedException)
         {
-            _logger.Warning("Login rejected — user '{Username}' is inactive.", username);
-            throw new UnauthorizedException("Account is disabled. Please contact an administrator.");
+            throw;
         }
-
-        if (!_passwordHasher.Verify(plainPassword, user.PasswordHash))
+        catch (Exception ex)
         {
-            _logger.Warning("Login failed — invalid password for '{Username}'.", username);
-            throw new UnauthorizedException("Invalid username or password.");
+            _logger.Error(ex, "Unexpected error during login for '{Username}'.", username);
+            throw;
         }
-
-        var token = _jwtTokenService.GenerateToken(user);
-        _logger.Information("User '{Username}' authenticated successfully.", username);
-        return token;
     }
 
     /// <inheritdoc />
     public string? ValidateToken(string token)
-        => _jwtTokenService.GetUsernameFromToken(token);
+    {
+        try
+        {
+            return _jwtTokenService.GetUsernameFromToken(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Unexpected error validating token.");
+            return null;
+        }
+    }
 }

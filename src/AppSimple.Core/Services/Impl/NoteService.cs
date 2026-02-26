@@ -17,75 +17,135 @@ public sealed class NoteService : INoteService
     {
         _notes  = notes;
         _logger = logger;
-        _logger.Debug("NoteService initialized.");
     }
 
     /// <inheritdoc />
-    public Task<Note?> GetByUidAsync(Guid uid)
+    public async Task<Note?> GetByUidAsync(Guid uid)
     {
-        _logger.Debug("GetByUid: {Uid}", uid);
-        return _notes.GetByUidAsync(uid);
+        try
+        {
+            return await _notes.GetByUidAsync(uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving note {Uid}.", uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<Note>> GetAllAsync()
+    public async Task<IEnumerable<Note>> GetAllAsync()
     {
-        _logger.Debug("GetAll notes requested.");
-        return _notes.GetAllAsync();
+        try
+        {
+            return await _notes.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving all notes.");
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<Note>> GetByUserUidAsync(Guid userUid)
+    public async Task<IEnumerable<Note>> GetByUserUidAsync(Guid userUid)
     {
-        _logger.Debug("GetByUserUid: {UserUid}", userUid);
-        return _notes.GetByUserUidAsync(userUid);
+        try
+        {
+            return await _notes.GetByUserUidAsync(userUid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving notes for user {UserUid}.", userUid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task<Note> CreateAsync(Guid userUid, string title, string content)
     {
-        var now  = DateTime.UtcNow;
-        var note = new Note
+        try
         {
-            Uid       = Guid.CreateVersion7(),
-            UserUid   = userUid,
-            Title     = title,
-            Content   = content,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
+            var now  = DateTime.UtcNow;
+            var note = new Note
+            {
+                Uid       = Guid.CreateVersion7(),
+                UserUid   = userUid,
+                Title     = title,
+                Content   = content,
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
 
-        await _notes.AddAsync(note);
-        _logger.Information("Note {Uid} created for user {UserUid}.", note.Uid, userUid);
-        return note;
+            await _notes.AddAsync(note);
+            _logger.Information("Note {Uid} created for user {UserUid}.", note.Uid, userUid);
+            return note;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error creating note for user {UserUid}.", userUid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task UpdateAsync(Note note)
     {
-        note.UpdatedAt = DateTime.UtcNow;
-        await _notes.UpdateAsync(note);
-        _logger.Information("Note {Uid} updated.", note.Uid);
+        try
+        {
+            note.UpdatedAt = DateTime.UtcNow;
+            await _notes.UpdateAsync(note);
+            _logger.Information("Note {Uid} updated.", note.Uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error updating note {Uid}.", note.Uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(Guid uid)
     {
-        await _notes.DeleteAsync(uid);
-        _logger.Information("Note {Uid} deleted.", uid);
+        try
+        {
+            await _notes.DeleteAsync(uid);
+            _logger.Information("Note {Uid} deleted.", uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error deleting note {Uid}.", uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task AddTagAsync(Guid noteUid, Guid tagUid)
     {
-        await _notes.AddTagAsync(noteUid, tagUid);
-        _logger.Debug("Tag {TagUid} added to note {NoteUid}.", tagUid, noteUid);
+        try
+        {
+            await _notes.AddTagAsync(noteUid, tagUid);
+            _logger.Debug("Tag {TagUid} added to note {NoteUid}.", tagUid, noteUid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error adding tag {TagUid} to note {NoteUid}.", tagUid, noteUid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task RemoveTagAsync(Guid noteUid, Guid tagUid)
     {
-        await _notes.RemoveTagAsync(noteUid, tagUid);
-        _logger.Debug("Tag {TagUid} removed from note {NoteUid}.", tagUid, noteUid);
+        try
+        {
+            await _notes.RemoveTagAsync(noteUid, tagUid);
+            _logger.Debug("Tag {TagUid} removed from note {NoteUid}.", tagUid, noteUid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error removing tag {TagUid} from note {NoteUid}.", tagUid, noteUid);
+            throw;
+        }
     }
 }

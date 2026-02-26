@@ -1,3 +1,4 @@
+using AppSimple.Core.Constants;
 using AppSimple.Core.Interfaces;
 using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
@@ -17,62 +18,106 @@ public sealed class TagService : ITagService
     {
         _tags   = tags;
         _logger = logger;
-        _logger.Debug("TagService initialized.");
     }
 
     /// <inheritdoc />
-    public Task<Tag?> GetByUidAsync(Guid uid)
+    public async Task<Tag?> GetByUidAsync(Guid uid)
     {
-        _logger.Debug("GetByUid: {Uid}", uid);
-        return _tags.GetByUidAsync(uid);
+        try
+        {
+            return await _tags.GetByUidAsync(uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving tag {Uid}.", uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<Tag>> GetAllAsync()
+    public async Task<IEnumerable<Tag>> GetAllAsync()
     {
-        _logger.Debug("GetAll tags requested.");
-        return _tags.GetAllAsync();
+        try
+        {
+            return await _tags.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving all tags.");
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public Task<IEnumerable<Tag>> GetByUserUidAsync(Guid userUid)
+    public async Task<IEnumerable<Tag>> GetByUserUidAsync(Guid userUid)
     {
-        _logger.Debug("GetByUserUid: {UserUid}", userUid);
-        return _tags.GetByUserUidAsync(userUid);
+        try
+        {
+            return await _tags.GetByUserUidAsync(userUid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error retrieving tags for user {UserUid}.", userUid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task<Tag> CreateAsync(Guid userUid, string name, string? description = null, string? color = null)
     {
-        var now = DateTime.UtcNow;
-        var tag = new Tag
+        try
         {
-            Uid         = Guid.CreateVersion7(),
-            UserUid     = userUid,
-            Name        = name,
-            Description = description,
-            Color       = color ?? "#CCCCCC",
-            CreatedAt   = now,
-            UpdatedAt   = now,
-        };
+            var now = DateTime.UtcNow;
+            var tag = new Tag
+            {
+                Uid         = Guid.CreateVersion7(),
+                UserUid     = userUid,
+                Name        = name,
+                Description = description,
+                Color       = color ?? "#CCCCCC",
+                CreatedAt   = now,
+                UpdatedAt   = now,
+            };
 
-        await _tags.AddAsync(tag);
-        _logger.Information("Tag '{Name}' ({Uid}) created for user {UserUid}.", name, tag.Uid, userUid);
-        return tag;
+            await _tags.AddAsync(tag);
+            _logger.Information("Tag '{Name}' ({Uid}) created for user {UserUid}.", name, tag.Uid, userUid);
+            return tag;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error creating tag '{Name}' for user {UserUid}.", name, userUid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task UpdateAsync(Tag tag)
     {
-        tag.UpdatedAt = DateTime.UtcNow;
-        await _tags.UpdateAsync(tag);
-        _logger.Information("Tag {Uid} updated.", tag.Uid);
+        try
+        {
+            tag.UpdatedAt = DateTime.UtcNow;
+            await _tags.UpdateAsync(tag);
+            _logger.Information("Tag {Uid} updated.", tag.Uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error updating tag {Uid}.", tag.Uid);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(Guid uid)
     {
-        await _tags.DeleteAsync(uid);
-        _logger.Information("Tag {Uid} deleted.", uid);
+        try
+        {
+            await _tags.DeleteAsync(uid);
+            _logger.Information("Tag {Uid} deleted.", uid);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Error deleting tag {Uid}.", uid);
+            throw;
+        }
     }
 }
