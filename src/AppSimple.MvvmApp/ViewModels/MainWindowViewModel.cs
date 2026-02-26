@@ -18,9 +18,11 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IAuthService    _auth;
     private readonly IUserService    _users;
     private readonly UserSession     _session;
-    private readonly HomeViewModel   _homeVm;
-    private readonly ProfileViewModel _profileVm;
-    private readonly UsersViewModel  _usersVm;
+    private readonly HomeViewModel      _homeVm;
+    private readonly ProfileViewModel   _profileVm;
+    private readonly UsersViewModel     _usersVm;
+    private readonly NotesViewModel     _notesVm;
+    private readonly ContactsViewModel  _contactsVm;
     private readonly ThemeManager    _themeManager;
     private readonly IAppConfigService _configService;
 
@@ -73,15 +75,19 @@ public partial class MainWindowViewModel : ObservableObject
         HomeViewModel homeVm,
         ProfileViewModel profileVm,
         UsersViewModel usersVm,
+        NotesViewModel notesVm,
+        ContactsViewModel contactsVm,
         ThemeManager themeManager,
         IAppConfigService configService)
     {
-        _auth      = auth;
-        _users     = users;
-        _session   = session;
-        _homeVm    = homeVm;
-        _profileVm = profileVm;
-        _usersVm   = usersVm;
+        _auth       = auth;
+        _users      = users;
+        _session    = session;
+        _homeVm     = homeVm;
+        _profileVm  = profileVm;
+        _usersVm    = usersVm;
+        _notesVm    = notesVm;
+        _contactsVm = contactsVm;
         _themeManager  = themeManager;
         _configService = configService;
         _currentPage = homeVm;
@@ -119,6 +125,22 @@ public partial class MainWindowViewModel : ObservableObject
     {
         await _usersVm.LoadAsync();
         CurrentPage = _usersVm;
+    }
+
+    /// <summary>Navigates to the Notes page (requires login).</summary>
+    [RelayCommand(CanExecute = nameof(IsLoggedIn))]
+    private async Task NavigateToNotes()
+    {
+        await _notesVm.LoadAsync();
+        CurrentPage = _notesVm;
+    }
+
+    /// <summary>Navigates to the Contacts page (requires login).</summary>
+    [RelayCommand(CanExecute = nameof(IsLoggedIn))]
+    private async Task NavigateToContacts()
+    {
+        await _contactsVm.LoadAsync();
+        CurrentPage = _contactsVm;
     }
 
     // ─── Auth ──────────────────────────────────────────────────────────────
@@ -199,6 +221,8 @@ public partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(WelcomeText));
         NavigateToProfileCommand.NotifyCanExecuteChanged();
         NavigateToUsersCommand.NotifyCanExecuteChanged();
+        NavigateToNotesCommand.NotifyCanExecuteChanged();
+        NavigateToContactsCommand.NotifyCanExecuteChanged();
         LogoutCommand.NotifyCanExecuteChanged();
     }
 }

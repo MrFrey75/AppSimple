@@ -1,0 +1,181 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Views.NotesView"
+             x:DataType="vm:NotesViewModel">
+
+    <Grid ColumnDefinitions="*,Auto">
+
+        <!-- Left: note list + toolbar -->
+        <DockPanel Grid.Column="0" Margin="0,0,12,0">
+
+            <!-- Toolbar -->
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Margin="0,0,0,10">
+
+                <TextBlock Text="My Notes" Classes="title" VerticalAlignment="Center" />
+
+                <Button Classes="primary"
+                        Content="＋ New Note"
+                        Command="{Binding ShowCreateFormCommand}" />
+
+                <Button Content="✏️ Edit"
+                        Command="{Binding EditSelectedNoteCommand}"
+                        IsEnabled="{Binding HasSelectedNote}" />
+
+                <Button Classes="danger"
+                        Content="🗑 Delete"
+                        Command="{Binding DeleteSelectedNoteCommand}"
+                        IsEnabled="{Binding HasSelectedNote}" />
+
+                <TextBlock Text="{Binding SuccessMessage}"
+                           IsVisible="{Binding HasSuccess}"
+                           Classes="success"
+                           VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasError}"
+                           Classes="error"
+                           VerticalAlignment="Center" />
+
+            </StackPanel>
+
+            <!-- Note list -->
+            <ListBox ItemsSource="{Binding Notes}"
+                     SelectedItem="{Binding SelectedNote}"
+                     SelectionMode="Single">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2" Margin="4,2">
+                            <TextBlock Text="{Binding Title}"
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Content}"
+                                       Classes="subtitle"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxLines="2" />
+                            <TextBlock Text="{Binding UpdatedAt, StringFormat=\{0:yyyy-MM-dd HH:mm\}}"
+                                       FontSize="11"
+                                       Opacity="0.6" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
+        <!-- Right: detail / form panel -->
+        <Border Grid.Column="1" Width="360">
+            <Grid>
+
+                <!-- Create / Edit form -->
+                <Border Classes="card" IsVisible="{Binding IsFormVisible}">
+                    <ScrollViewer>
+                        <StackPanel Spacing="10">
+
+                            <TextBlock Text="{Binding FormTitle}"
+                                       FontSize="15" FontWeight="SemiBold" />
+
+                            <TextBlock Text="Title" Classes="label" />
+                            <TextBox Text="{Binding NoteTitle}"
+                                     Watermark="Note title (optional)" />
+
+                            <TextBlock Text="Content" Classes="label" />
+                            <TextBox Text="{Binding NoteContent}"
+                                     Watermark="Write your note here…"
+                                     AcceptsReturn="True"
+                                     Height="180" />
+
+                            <TextBlock Text="{Binding ErrorMessage}"
+                                       IsVisible="{Binding HasError}"
+                                       Classes="error" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="primary"
+                                        Content="Save"
+                                        Command="{Binding SaveFormCommand}"
+                                        IsEnabled="{Binding !IsBusy}" />
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelFormCommand}" />
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Note detail + tag management -->
+                <Border Classes="card"
+                        IsVisible="{Binding HasSelectedNote}">
+                    <ScrollViewer>
+                        <StackPanel Spacing="12"
+                                    IsVisible="{Binding IsFormVisible,
+                                        Converter={x:Static BoolConverters.Not}}">
+
+                            <TextBlock Text="{Binding SelectedNote.Title}"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       TextWrapping="Wrap" />
+
+                            <TextBlock Text="{Binding SelectedNote.Content}"
+                                       TextWrapping="Wrap"
+                                       Opacity="0.85" />
+
+                            <TextBlock Text="{Binding SelectedNote.UpdatedAt,
+                                           StringFormat=Last updated: \{0:yyyy-MM-dd HH:mm\}}"
+                                       FontSize="11"
+                                       Opacity="0.6" />
+
+                            <!-- Tags section -->
+                            <TextBlock Text="Tags"
+                                       FontWeight="SemiBold"
+                                       Margin="0,8,0,0" />
+
+                            <ListBox ItemsSource="{Binding SelectedNoteTags}"
+                                     SelectedItem="{Binding SelectedNoteTag}"
+                                     MaxHeight="120">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Border Width="12" Height="12"
+                                                    CornerRadius="6"
+                                                    Background="{Binding Color}" />
+                                            <TextBlock Text="{Binding Name}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Classes="danger"
+                                    Content="Remove Tag"
+                                    Command="{Binding RemoveTagFromNoteCommand}"
+                                    IsEnabled="{Binding HasSelectedNoteTag}"
+                                    HorizontalAlignment="Left" />
+
+                            <!-- Add tag -->
+                            <TextBlock Text="Add Tag" Classes="label" Margin="0,6,0,0" />
+                            <ComboBox ItemsSource="{Binding AllTags}"
+                                      SelectedItem="{Binding TagToAdd}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <Button Classes="primary"
+                                    Content="Add Tag"
+                                    Command="{Binding AddTagToNoteCommand}"
+                                    HorizontalAlignment="Left" />
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,304 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AppSimple.MvvmApp.ViewModels"
+             x:Class="AppSimple.MvvmApp.Views.ContactsView"
+             x:DataType="vm:ContactsViewModel">
+
+    <Grid ColumnDefinitions="280,*">
+
+        <!-- Left: contact list + toolbar -->
+        <DockPanel Grid.Column="0" Margin="0,0,12,0">
+
+            <!-- Toolbar -->
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Margin="0,0,0,10">
+
+                <TextBlock Text="Contacts" Classes="title" VerticalAlignment="Center" />
+
+                <Button Classes="primary"
+                        Content="＋ New"
+                        Command="{Binding ShowCreateFormCommand}" />
+
+                <Button Content="✏️"
+                        ToolTip.Tip="Edit contact"
+                        Command="{Binding EditSelectedContactCommand}"
+                        IsEnabled="{Binding HasSelectedContact}" />
+
+                <Button Classes="danger"
+                        Content="🗑"
+                        ToolTip.Tip="Delete contact"
+                        Command="{Binding DeleteSelectedContactCommand}"
+                        IsEnabled="{Binding HasSelectedContact}" />
+
+            </StackPanel>
+
+            <!-- Contact list -->
+            <ListBox ItemsSource="{Binding Contacts}"
+                     SelectedItem="{Binding SelectedContact}"
+                     SelectionMode="Single">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2" Margin="4,2">
+                            <TextBlock Text="{Binding Name}"
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding EmailAddresses.Count,
+                                           StringFormat=\{0\} email(s)}"
+                                       FontSize="11"
+                                       Opacity="0.6" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+
+        <!-- Right: create/edit form OR contact detail -->
+        <Grid Grid.Column="1">
+
+            <!-- Status messages (always visible) -->
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        VerticalAlignment="Top"
+                        Margin="0,0,0,8">
+                <TextBlock Text="{Binding SuccessMessage}"
+                           IsVisible="{Binding HasSuccess}"
+                           Classes="success" />
+                <TextBlock Text="{Binding ErrorMessage}"
+                           IsVisible="{Binding HasError}"
+                           Classes="error" />
+            </StackPanel>
+
+            <!-- Create / Edit form -->
+            <Border Classes="card"
+                    Margin="0,30,0,0"
+                    IsVisible="{Binding IsFormVisible}">
+                <StackPanel Spacing="10" MaxWidth="400">
+
+                    <TextBlock Text="{Binding FormTitle}"
+                               FontSize="15" FontWeight="SemiBold" />
+
+                    <TextBlock Text="Name" Classes="label" />
+                    <TextBox Text="{Binding FormName}"
+                             Watermark="Full name" />
+
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding HasError}"
+                               Classes="error" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Classes="primary"
+                                Content="Save"
+                                Command="{Binding SaveFormCommand}"
+                                IsEnabled="{Binding !IsBusy}" />
+                        <Button Content="Cancel"
+                                Command="{Binding CancelFormCommand}" />
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+
+            <!-- Contact detail panel -->
+            <ScrollViewer IsVisible="{Binding IsDetailVisible}">
+                <StackPanel Spacing="16">
+
+                    <!-- Contact name header -->
+                    <TextBlock Text="{Binding SelectedContact.Name}"
+                               FontSize="20" FontWeight="Bold" />
+
+                    <!-- Email addresses -->
+                    <Border Classes="card">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Email Addresses" FontWeight="SemiBold" />
+
+                            <ListBox ItemsSource="{Binding SelectedContact.EmailAddresses}"
+                                     SelectedItem="{Binding SelectedEmail}"
+                                     MaxHeight="120">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Email}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Type}"
+                                                       Classes="subtitle"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="★"
+                                                       Foreground="{DynamicResource ThemeAccentBrush}"
+                                                       IsVisible="{Binding IsPrimary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Classes="danger"
+                                    Content="Remove Email"
+                                    Command="{Binding DeleteEmailCommand}"
+                                    IsEnabled="{Binding HasSelectedEmail}"
+                                    HorizontalAlignment="Left" />
+
+                            <!-- Add email -->
+                            <TextBlock Text="Add Email" Classes="label" Margin="0,6,0,0" />
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding NewEmail}"
+                                         Watermark="email@example.com"
+                                         Margin="0,0,4,0" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding EmailTypes}"
+                                          SelectedItem="{Binding NewEmailType}"
+                                          Width="100"
+                                          Margin="0,0,4,0" />
+                                <CheckBox Grid.Column="2"
+                                          IsChecked="{Binding NewEmailIsPrimary}"
+                                          Content="Primary"
+                                          Margin="0,0,4,0" />
+                                <Button Grid.Column="3"
+                                        Classes="primary"
+                                        Content="Add"
+                                        Command="{Binding AddEmailCommand}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Phone numbers -->
+                    <Border Classes="card">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Phone Numbers" FontWeight="SemiBold" />
+
+                            <ListBox ItemsSource="{Binding SelectedContact.PhoneNumbers}"
+                                     SelectedItem="{Binding SelectedPhone}"
+                                     MaxHeight="120">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Number}"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Type}"
+                                                       Classes="subtitle"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="★"
+                                                       Foreground="{DynamicResource ThemeAccentBrush}"
+                                                       IsVisible="{Binding IsPrimary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Classes="danger"
+                                    Content="Remove Phone"
+                                    Command="{Binding DeletePhoneCommand}"
+                                    IsEnabled="{Binding HasSelectedPhone}"
+                                    HorizontalAlignment="Left" />
+
+                            <!-- Add phone -->
+                            <TextBlock Text="Add Phone" Classes="label" Margin="0,6,0,0" />
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding NewPhone}"
+                                         Watermark="+1-555-0001"
+                                         Margin="0,0,4,0" />
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding PhoneTypes}"
+                                          SelectedItem="{Binding NewPhoneType}"
+                                          Width="100"
+                                          Margin="0,0,4,0" />
+                                <CheckBox Grid.Column="2"
+                                          IsChecked="{Binding NewPhoneIsPrimary}"
+                                          Content="Primary"
+                                          Margin="0,0,4,0" />
+                                <Button Grid.Column="3"
+                                        Classes="primary"
+                                        Content="Add"
+                                        Command="{Binding AddPhoneCommand}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Addresses -->
+                    <Border Classes="card">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Addresses" FontWeight="SemiBold" />
+
+                            <ListBox ItemsSource="{Binding SelectedContact.Addresses}"
+                                     SelectedItem="{Binding SelectedAddress}"
+                                     MaxHeight="120">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Street}"
+                                                       FontWeight="Medium"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Classes="subtitle"
+                                                       TextTrimming="CharacterEllipsis">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0}, {1} {2}">
+                                                        <Binding Path="City" />
+                                                        <Binding Path="State" />
+                                                        <Binding Path="PostalCode" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Type}"
+                                                       FontSize="11"
+                                                       Opacity="0.6" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Classes="danger"
+                                    Content="Remove Address"
+                                    Command="{Binding DeleteAddressCommand}"
+                                    IsEnabled="{Binding HasSelectedAddress}"
+                                    HorizontalAlignment="Left" />
+
+                            <!-- Add address -->
+                            <TextBlock Text="Add Address" Classes="label" Margin="0,6,0,0" />
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
+                                <TextBox Grid.Row="0" Grid.Column="0"
+                                         Text="{Binding NewStreet}"
+                                         Watermark="Street"
+                                         Margin="0,0,4,4" />
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                                         Text="{Binding NewCity}"
+                                         Watermark="City"
+                                         Margin="0,0,0,4" />
+                                <TextBox Grid.Row="1" Grid.Column="0"
+                                         Text="{Binding NewState}"
+                                         Watermark="State"
+                                         Margin="0,0,4,4" />
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                         Text="{Binding NewPostalCode}"
+                                         Watermark="Postal Code"
+                                         Margin="0,0,0,4" />
+                                <TextBox Grid.Row="2" Grid.Column="0"
+                                         Text="{Binding NewCountry}"
+                                         Watermark="Country"
+                                         Margin="0,0,4,0" />
+                                <StackPanel Grid.Row="2" Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="4">
+                                    <ComboBox ItemsSource="{Binding AddressTypes}"
+                                              SelectedItem="{Binding NewAddressType}"
+                                              Width="90" />
+                                    <Button Classes="primary"
+                                            Content="Add"
+                                            Command="{Binding AddAddressCommand}" />
+                                </StackPanel>
+                            </Grid>
+
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+
+    </Grid>
+</UserControl>

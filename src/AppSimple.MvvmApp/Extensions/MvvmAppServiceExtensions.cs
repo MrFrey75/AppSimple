@@ -20,6 +20,8 @@ public static class MvvmAppServiceExtensions
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<ProfileViewModel>();
         services.AddSingleton<UsersViewModel>();
+        services.AddSingleton<NotesViewModel>();
+        services.AddSingleton<ContactsViewModel>();
         services.AddSingleton<MainWindowViewModel>();
 
         services.AddTransient<MainWindow>();
