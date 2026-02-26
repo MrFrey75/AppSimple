@@ -45,6 +45,8 @@ public static class CoreServiceExtensions
         services.AddScoped<IUserQueryService>(sp => sp.GetRequiredService<IUserService>());
         services.AddScoped<IUserCommandService>(sp => sp.GetRequiredService<IUserService>());
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<INoteService, NoteService>();
+        services.AddScoped<ITagService, TagService>();
 
         return services;
     }

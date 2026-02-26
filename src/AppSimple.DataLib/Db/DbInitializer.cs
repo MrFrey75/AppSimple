@@ -50,6 +50,33 @@ public sealed class DbInitializer
                 CreatedAt    TEXT NOT NULL,
                 UpdatedAt    TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS Tags (
+                Uid         TEXT NOT NULL PRIMARY KEY,
+                UserUid     TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+                Name        TEXT NOT NULL COLLATE NOCASE,
+                Description TEXT,
+                Color       TEXT NOT NULL DEFAULT '#CCCCCC',
+                IsSystem    INTEGER NOT NULL DEFAULT 0,
+                CreatedAt   TEXT NOT NULL,
+                UpdatedAt   TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS Notes (
+                Uid       TEXT NOT NULL PRIMARY KEY,
+                UserUid   TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+                Title     TEXT NOT NULL DEFAULT '',
+                Content   TEXT NOT NULL,
+                IsSystem  INTEGER NOT NULL DEFAULT 0,
+                CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS NoteTags (
+                NoteUid TEXT NOT NULL REFERENCES Notes(Uid) ON DELETE CASCADE,
+                TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
+                PRIMARY KEY (NoteUid, TagUid)
+            );
             """);
 
         _logger.Information("Database schema initialized.");

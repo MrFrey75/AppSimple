@@ -170,6 +170,8 @@ Full source map: [`docs/core-structure.md`](docs/core-structure.md)
 |---|---|
 | `BaseEntity` | Abstract base — `Uid` (Guid v7), `CreatedAt`, `UpdatedAt`, `IsSystem` |
 | `User` | Extends `BaseEntity` — username, email, password hash, profile fields, role, active flag |
+| `Note` | Extends `BaseEntity` — title, content, owning `UserUid`, associated `Tags` list |
+| `Tag` | Extends `BaseEntity` — name, description, hex color, owning `UserUid` |
 
 ### Enums (`Enums/`)
 
@@ -206,6 +208,8 @@ Full source map: [`docs/core-structure.md`](docs/core-structure.md)
 |---|---|
 | `IUserService` / `UserService` | GetByUid, GetByUsername, GetAll, Create, Update, Delete, ChangePassword |
 | `IAuthService` / `AuthService` | LoginAsync → `AuthResult` (JWT on success), ValidateToken |
+| `INoteService` / `NoteService` | GetByUid, GetAll (admin), GetByUserUid, Create, Update, Delete, AddTag, RemoveTag |
+| `ITagService` / `TagService` | GetByUid, GetAll (admin), GetByUserUid, Create, Update, Delete |
 
 ### Logging (`Logging/`)
 
@@ -410,6 +414,33 @@ CREATE TABLE Users (
     CreatedAt    TEXT NOT NULL,
     UpdatedAt    TEXT NOT NULL
 );
+
+CREATE TABLE Tags (
+    Uid         TEXT NOT NULL PRIMARY KEY,
+    UserUid     TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Name        TEXT NOT NULL COLLATE NOCASE,
+    Description TEXT,
+    Color       TEXT NOT NULL DEFAULT '#CCCCCC',
+    IsSystem    INTEGER NOT NULL DEFAULT 0,
+    CreatedAt   TEXT NOT NULL,
+    UpdatedAt   TEXT NOT NULL
+);
+
+CREATE TABLE Notes (
+    Uid       TEXT NOT NULL PRIMARY KEY,
+    UserUid   TEXT NOT NULL REFERENCES Users(Uid) ON DELETE CASCADE,
+    Title     TEXT NOT NULL DEFAULT '',
+    Content   TEXT NOT NULL,
+    IsSystem  INTEGER NOT NULL DEFAULT 0,
+    CreatedAt TEXT NOT NULL,
+    UpdatedAt TEXT NOT NULL
+);
+
+CREATE TABLE NoteTags (
+    NoteUid TEXT NOT NULL REFERENCES Notes(Uid) ON DELETE CASCADE,
+    TagUid  TEXT NOT NULL REFERENCES Tags(Uid)  ON DELETE CASCADE,
+    PRIMARY KEY (NoteUid, TagUid)
+);
 ```
 
 ## Testing
@@ -457,7 +488,9 @@ cd src && $HOME/.dotnet/dotnet test AppSimple.sln
 - [x] `AppSimple.MvvmApp` — Avalonia UI cross-platform desktop app — **branch: MvvmApp**
 - [x] `AppSimple.WebApi` — ASP.NET Core 10 REST API with JWT auth — **branch: WebApi**
 - [x] `AppSimple.WebApp` — ASP.NET Core 10 MVC web front-end (connects via WebApi HTTP)
+- [x] Note-taking feature — `Note` + `Tag` models, services, repositories, DB schema (Notes, Tags, NoteTags)
 - [ ] `AppSimple.AdminCli` — admin console app connecting via WebApi HTTP
+- [ ] Note-taking UI in UserCLI, MvvmApp, WebApi, and WebApp
 - [ ] Test projects for WebApi, AdminCli, WebApp, MvvmApp
 
 ## Contributing

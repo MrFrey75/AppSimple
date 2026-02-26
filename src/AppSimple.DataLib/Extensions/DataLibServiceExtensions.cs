@@ -26,6 +26,8 @@ public static class DataLibServiceExtensions
         services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
         services.AddSingleton<DbInitializer>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<INoteRepository, NoteRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IDatabaseResetService, DatabaseResetService>();
 
         return services;
