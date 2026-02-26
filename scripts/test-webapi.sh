@@ -85,10 +85,13 @@ else
   info "Building WebApi..."
   # Remove stale MSBuild artifacts that cause spurious CoreGenerateAssemblyInfo failures
   rm -rf "$SCRIPT_DIR/../src/AppSimple.Core/obj/Debug"
-  dotnet build "$PROJECT" --nologo -q || { echo -e "${RED}Build failed — aborting.${RESET}"; exit 1; }
+  # cd to src/ so MSBuild resolves obj/ paths relative to each project, not the script's cwd
+  (cd "$SCRIPT_DIR/../src" && dotnet build AppSimple.WebApi/AppSimple.WebApi.csproj --nologo -q) \
+    || { echo -e "${RED}Build failed — aborting.${RESET}"; exit 1; }
 
   info "Starting WebApi at $BASE..."
-  ASPNETCORE_URLS="$BASE" dotnet run --project "$PROJECT" --no-build --nologo \
+  (cd "$SCRIPT_DIR/../src" && ASPNETCORE_URLS="$BASE" dotnet run \
+    --project AppSimple.WebApi/AppSimple.WebApi.csproj --no-build --nologo) \
     >/tmp/appsimple-webapi.log 2>&1 &
   API_PID=$!
 
