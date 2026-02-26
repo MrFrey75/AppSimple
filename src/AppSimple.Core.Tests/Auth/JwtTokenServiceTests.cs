@@ -1,8 +1,10 @@
 using AppSimple.Core.Auth;
 using AppSimple.Core.Auth.Impl;
 using AppSimple.Core.Enums;
+using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 
 namespace AppSimple.Core.Tests.Auth;
 
@@ -22,7 +24,7 @@ public sealed class JwtTokenServiceTests
             Audience          = "TestAudience",
             ExpirationMinutes = expirationMinutes
         };
-        return new JwtTokenService(Options.Create(opts));
+        return new JwtTokenService(Options.Create(opts), Substitute.For<IAppLogger<JwtTokenService>>());
     }
 
     private static User MakeUser() => new()

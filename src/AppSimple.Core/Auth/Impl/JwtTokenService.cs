@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AppSimple.Core.Auth;
+using AppSimple.Core.Logging;
 using AppSimple.Core.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -15,13 +16,16 @@ public sealed class JwtTokenService : IJwtTokenService
 {
     private readonly JwtOptions _options;
     private readonly JwtSecurityTokenHandler _handler = new();
+    private readonly IAppLogger<JwtTokenService> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtTokenService"/>.
     /// </summary>
-    public JwtTokenService(IOptions<JwtOptions> options)
+    public JwtTokenService(IOptions<JwtOptions> options, IAppLogger<JwtTokenService> logger)
     {
-        _options = options.Value;
+         _logger = logger;
+         _logger.Debug("JwtTokenService initializing with options: {@Options}", options.Value);
+         _options = options.Value;
     }
 
     /// <inheritdoc />
@@ -46,6 +50,8 @@ public sealed class JwtTokenService : IJwtTokenService
             expires:            DateTime.UtcNow.AddMinutes(_options.ExpirationMinutes),
             signingCredentials: credentials);
 
+        _logger.Debug("Generated JWT token for user '{Username}' with UID {Uid}", user.Username, user.Uid);
+
         return _handler.WriteToken(token);
     }
 
@@ -53,9 +59,11 @@ public sealed class JwtTokenService : IJwtTokenService
     public string? GetUsernameFromToken(string token)
     {
         var principal = Validate(token);
-        return principal?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
-            ?? principal?.FindFirst(ClaimTypes.Name)?.Value;
-    }
+        var username = principal?.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value
+                    ?? principal?.FindFirst(ClaimTypes.Name)?.Value;
+        _logger.Debug("Extracted username '{Username}' from token", username);
+        return username;    
+}
 
     /// <inheritdoc />
     public bool IsTokenValid(string token)
@@ -80,8 +88,9 @@ public sealed class JwtTokenService : IJwtTokenService
         {
             return _handler.ValidateToken(token, parameters, out _);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Warning("Token validation failed: {Message}", ex.Message);
             return null;
         }
     }

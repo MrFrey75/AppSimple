@@ -31,8 +31,8 @@ public static class CoreServiceExtensions
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         // Config
-        services.AddSingleton<IAppConfigService>(_ =>
-            new AppConfigService(AppConfigPath.Resolve()));
+        services.AddSingleton<IAppConfigService>(sp =>
+            new AppConfigService(AppConfigPath.Resolve(), sp.GetRequiredService<IAppLogger<AppConfigService>>()));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<User>();

@@ -1,4 +1,5 @@
 using AppSimple.Core.Config;
+using AppSimple.Core.Config.Impl;
 using AppSimple.Core.Constants;
 using AppSimple.Core.Logging;
 using AppSimple.WebApp.Services;
@@ -48,8 +49,8 @@ public static class WebAppServiceExtensions
         builder.Services.AddControllersWithViews();
         builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddSingleton<IAppConfigService>(_ =>
-            new AppSimple.Core.Config.Impl.AppConfigService(AppConfigPath.Resolve(builder.Configuration["AppConfig:Path"])));
+        builder.Services.AddSingleton<IAppConfigService>(sp =>
+            new AppConfigService(AppConfigPath.Resolve(builder.Configuration["AppConfig:Path"]), sp.GetRequiredService<IAppLogger<AppConfigService>>()));
         builder.Services.AddSingleton<IThemeService, ThemeService>();
 
         return builder;
