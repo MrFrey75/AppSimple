@@ -107,11 +107,9 @@
 
                 <!-- Note detail + tag management -->
                 <Border Classes="card"
-                        IsVisible="{Binding HasSelectedNote}">
+                        IsVisible="{Binding IsDetailVisible}">
                     <ScrollViewer>
-                        <StackPanel Spacing="12"
-                                    IsVisible="{Binding IsFormVisible,
-                                        Converter={x:Static BoolConverters.Not}}">
+                        <StackPanel Spacing="12">
 
                             <TextBlock Text="{Binding SelectedNote.Title}"
                                        FontSize="15" FontWeight="SemiBold"

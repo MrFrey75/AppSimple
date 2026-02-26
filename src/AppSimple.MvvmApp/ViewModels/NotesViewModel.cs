@@ -33,6 +33,7 @@ public partial class NotesViewModel : BaseViewModel
     /// <summary>Gets or sets the note currently selected in the list.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedNote))]
+    [NotifyPropertyChangedFor(nameof(IsDetailVisible))]
     [NotifyPropertyChangedFor(nameof(SelectedNoteTagsText))]
     private Note? _selectedNote;
 
@@ -57,6 +58,7 @@ public partial class NotesViewModel : BaseViewModel
     /// <summary>Gets or sets the current form mode (None / Create / Edit).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFormVisible))]
+    [NotifyPropertyChangedFor(nameof(IsDetailVisible))]
     [NotifyPropertyChangedFor(nameof(FormTitle))]
     private FormMode _formMode = FormMode.None;
 
@@ -73,6 +75,9 @@ public partial class NotesViewModel : BaseViewModel
 
     /// <summary>Gets a value indicating whether the form panel should be visible.</summary>
     public bool IsFormVisible => FormMode != FormMode.None;
+
+    /// <summary>Gets a value indicating whether the note detail panel should be visible.</summary>
+    public bool IsDetailVisible => SelectedNote is not null && FormMode == FormMode.None;
 
     /// <summary>Gets the form panel title.</summary>
     public string FormTitle => FormMode switch
