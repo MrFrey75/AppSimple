@@ -85,9 +85,19 @@ else
   info "Building WebApi..."
   # Remove stale MSBuild artifacts that cause spurious CoreGenerateAssemblyInfo failures
   rm -rf "$SCRIPT_DIR/../src/AppSimple.Core/obj/Debug"
-  # cd to src/ so MSBuild resolves obj/ paths relative to each project, not the script's cwd
-  (cd "$SCRIPT_DIR/../src" && dotnet build AppSimple.WebApi/AppSimple.WebApi.csproj --nologo -q) \
-    || { echo -e "${RED}Build failed — aborting.${RESET}"; exit 1; }
+  # First build after a clean sometimes fails on .NET 10 — retry once
+  BUILD_OK=false
+  for attempt in 1 2; do
+    if (cd "$SCRIPT_DIR/../src" && dotnet build AppSimple.WebApi/AppSimple.WebApi.csproj --nologo -q 2>/dev/null); then
+      BUILD_OK=true; break
+    fi
+    [[ $attempt -eq 1 ]] && info "Build attempt 1 failed, retrying..."
+  done
+  if ! $BUILD_OK; then
+    echo -e "${RED}Build failed after 2 attempts — aborting.${RESET}"
+    (cd "$SCRIPT_DIR/../src" && dotnet build AppSimple.WebApi/AppSimple.WebApi.csproj --nologo 2>&1) || true
+    exit 1
+  fi
 
   info "Starting WebApi at $BASE..."
   (cd "$SCRIPT_DIR/../src" && ASPNETCORE_URLS="$BASE" dotnet run \
